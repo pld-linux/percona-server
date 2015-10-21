@@ -13,30 +13,30 @@
 . /etc/sysconfig/network
 
 # Get service config
-if [ -f /etc/sysconfig/mysql ]; then
-	. /etc/sysconfig/mysql
+if [ -f /etc/sysconfig/percona-server ]; then
+	. /etc/sysconfig/percona-server
 else
-	nls "Error: %s not found" /etc/sysconfig/mysql
-	nls "%s can't be run." MySQL
+	nls "Error: %s not found" /etc/sysconfig/percona-server
+	nls "%s can't be run." percona-server
 	exit 1
 fi
 
 if [ -n "$MYSQL_DB_CLUSTERS" ]; then
-	nls "Warning: MYSQL_DB_CLUSTERS is set. It's obsolete. Use %s instead." /etc/mysql/clusters.conf
+	nls "Warning: MYSQL_DB_CLUSTERS is set. It's obsolete. Use %s instead." /etc/percona-server/clusters.conf
 fi
 
-if [ -f /etc/mysql/clusters.conf ]; then
-	MYSQL_DB_CLUSTERS=$(awk -F= '!/^#/ && /=/{print $2}' /etc/mysql/clusters.conf)
+if [ -f /etc/percona-server/clusters.conf ]; then
+	MYSQL_DB_CLUSTERS=$(awk -F= '!/^#/ && /=/{print $2}' /etc/percona-server/clusters.conf)
 	if [ -z "$MYSQL_DB_CLUSTERS" ]; then
 		nls "Warning: there are no configured clusters."
 	fi
 
 else
-	nls "Warning: Missing clusters config file %s" /etc/mysql/clusters.conf
+	nls "Warning: Missing clusters config file %s" /etc/percona-server/clusters.conf
 	if [ -z "$MYSQL_DB_CLUSTERS" ]; then
 		nls "Warning: there are no configured clusters."
-		nls "Using default cluster /var/lib/mysql (compatibility mode)"
-		MYSQL_DB_CLUSTERS=/var/lib/mysql
+		nls "Using default cluster /var/lib/percona-server (compatibility mode)"
+		MYSQL_DB_CLUSTERS=/var/lib/percona-server
 	fi
 fi
 
@@ -44,7 +44,7 @@ fi
 # Check that networking is up
 if is_yes "${NETWORKING}"; then
 	if [ ! -f /var/lock/subsys/network -a "$1" != stop -a "$1" != status -a "$1" != init ]; then
-		msg_network_down MySQL
+		msg_network_down percona-server
 		exit 1
 	fi
 else
@@ -60,9 +60,9 @@ if [ $# -gt 1 ]; then
 	shift
 	# perform action for specified clusters only
 	for a in "$@"; do
-		# try auto resolving from /etc/mysql/clusters.conf
+		# try auto resolving from /etc/percona-server/clusters.conf
 		if [[ "$a" != /* ]]; then
-			m=$(awk -va="$a" -F= 'substr($0, 1, length(a)) == a {print $1}' /etc/mysql/clusters.conf)
+			m=$(awk -va="$a" -F= 'substr($0, 1, length(a)) == a {print $1}' /etc/percona-server/clusters.conf)
 			if [ -z "$m" ]; then
 				echo >&2 "Cluster name '$a' did not match anything!"
 				exit 1
@@ -71,7 +71,7 @@ if [ $# -gt 1 ]; then
 				echo >&2 "Cluster name '$a' ambiguous:" $m
 				exit 1
 			fi
-			a=$(awk -va="$a" -F= 'substr($0, 1, length(a)) == a {print $2}' /etc/mysql/clusters.conf)
+			a=$(awk -va="$a" -F= 'substr($0, 1, length(a)) == a {print $2}' /etc/percona-server/clusters.conf)
 		fi
 		DB_CLUSTERS="$DB_CLUSTERS $a"
 	done
@@ -80,7 +80,7 @@ else
 fi
 
 # global error log, if mysqld.conf hasn't migrated to log-error style
-MYSQL_ERRLOG=/var/log/mysql/mysqld.log
+MYSQL_ERRLOG=/var/log/percona-server/percona-serverd.log
 MYSQL_STOP_WAIT_TIME=${MYSQL_STOP_WAIT_TIME:-900}
 
 #
@@ -88,7 +88,7 @@ MYSQL_STOP_WAIT_TIME=${MYSQL_STOP_WAIT_TIME:-900}
 #
 
 #
-# check for mysql status
+# check for percona-server status
 #
 # arguments:
 # $1 - db cluster
@@ -96,7 +96,7 @@ MYSQL_STOP_WAIT_TIME=${MYSQL_STOP_WAIT_TIME:-900}
 #
 # sets variables:
 # MYSQL_STATUS = starting | running | not running | died
-# MYSQL_PID    = pid of mysqld process
+# MYSQL_PID    = pid of percona-server process
 #
 mysqlstatus() {
 	clusterdir="$1"
@@ -125,7 +125,7 @@ mysqlstatus() {
 	fi
 
 	if [ "$mode" = "start" ]; then
-		MYSQL_GREP_PID=$(grep -alE "^/usr/sbin/mysqld.*${MYSQL_PIDFILE}" /proc/[0-9]*/cmdline 2> /dev/null | awk -F "/" '{ print $3; exit; }')
+		MYSQL_GREP_PID=$(grep -alE "^/usr/sbin/percona-serverd.*${MYSQL_PIDFILE}" /proc/[0-9]*/cmdline 2> /dev/null | awk -F "/" '{ print $3; exit; }')
 		if [ -n "$MYSQL_GREP_PID" ]; then
 			MYSQL_PID=$MYSQL_GREP_PID
 			if grep -qa "$MYSQL_PIDFILE" /proc/$MYSQL_PID/cmdline 2> /dev/null; then
@@ -160,17 +160,17 @@ mysqlgetconfig() {
 	local mode="$2"
 
 	# emulate old behaviour if only one cluster specified
-	if [ "$clusterdir" = "$MYSQL_DB_CLUSTERS" -a "$clusterdir" = "/var/lib/mysql" -a -f /etc/mysqld.conf ]; then
+	if [ "$clusterdir" = "$MYSQL_DB_CLUSTERS" -a "$clusterdir" = "/var/lib/percona-server" -a -f /etc/percona-serverd.conf ]; then
 		MYSQL_RA_COMPAT=yes
-		config_file=/etc/mysqld.conf
+		config_file=/etc/percona-serverd.conf
 	else
-		local config=$(awk -F= -vclusterdir="$clusterdir" '!/^#/{ if (clusterdir == $2) print $1}' /etc/mysql/clusters.conf)
+		local config=$(awk -F= -vclusterdir="$clusterdir" '!/^#/{ if (clusterdir == $2) print $1}' /etc/percona-server/clusters.conf)
 		if [[ $config = /* ]]; then
 			config_file="$config"
-		elif [ -f "/etc/mysql/$config" ]; then
-			config_file="/etc/mysql/$config"
+		elif [ -f "/etc/percona-server/$config" ]; then
+			config_file="/etc/percona-server/$config"
 		else
-			config_file="$clusterdir/mysqld.conf"
+			config_file="$clusterdir/percona-serverd.conf"
 		fi
 	fi
 
@@ -189,7 +189,7 @@ mysqlgetconfig() {
 
 	if [ ! -f "$config_file" ]; then
 		nls "Error: config file %s not found" "$config_file"
-		nls "MySQL can't be run. Did you initialize DB by doing \`$0 init'?"
+		nls "percona-server can't be run. Did you initialize DB by doing \`$0 init'?"
 		if [ "$mode" = "status" ]; then 
 			exit 3
 		else
@@ -251,23 +251,23 @@ mysqlgetconfig() {
 	if is_yes "$MYSQL_RA_COMPAT"; then
 		MYSQL_DATA_DIR_SUB=""
 	else
-		MYSQL_DATA_DIR_SUB="/mysqldb"
+		MYSQL_DATA_DIR_SUB="/percona-serverdb"
 	fi
 
 	if [ -z "$MYSQL_DATA_DIR" -o "$MYSQL_DATA_DIR" != "${clusterdir}${MYSQL_DATA_DIR_SUB}/db" ]; then
 		nls "Error: datadir specified in %s should be %s" "$config_file" "$clusterdir${MYSQL_DATA_DIR_SUB}/db"
-		nls " MySQL can't be run."
+		nls " percona-server can't be run."
 		exit 6
 	fi
 
-	if [ -z "$MYSQL_PIDFILE" -o "$MYSQL_PIDFILE" != "$clusterdir${MYSQL_DATA_DIR_SUB}/mysql.pid" ]; then
-		nls "Error: pid-file specified in %s should be %s" "$config_file" "$clusterdir${MYSQL_DATA_DIR_SUB}/mysql.pid"
-		nls " MySQL can't be run."
+	if [ -z "$MYSQL_PIDFILE" -o "$MYSQL_PIDFILE" != "$clusterdir${MYSQL_DATA_DIR_SUB}/percona-server.pid" ]; then
+		nls "Error: pid-file specified in %s should be %s" "$config_file" "$clusterdir${MYSQL_DATA_DIR_SUB}/percona-server.pid"
+		nls " percona-server can't be run."
 		exit 6
 	fi
 
 	if [ -z "$MYSQL_USER" ]; then
-		echo "$(nls 'MySQL user not configured properly')"'!' >&2
+		echo "$(nls 'percona-server user not configured properly')"'!' >&2
 		nls "Edit %s and configure it." "$config_file" >&2
 		exit 6
 	fi
@@ -277,19 +277,19 @@ mysqlgetconfig() {
 mysqlstart() {
 	local clusterdir="$1"
 	mysqlgetconfig "$clusterdir"
-	if [ ! -d "$MYSQL_DATA_DIR/mysql" ]; then
-		nls "MySQL cluster %s not initialized." "$clusterdir"
+	if [ ! -d "$MYSQL_DATA_DIR/percona-server" ]; then
+		nls "percona-server cluster %s not initialized." "$clusterdir"
 		nls "Try \`%s init %s' before start." "$0" "$clusterdir"
 		exit 6
 	fi
 
-	msg_starting "MySQL $clusterdir"; busy
+	msg_starting "percona-server $clusterdir"; busy
 	[ -z "$DEFAULT_SERVICE_RUN_NICE_LEVEL" ] && DEFAULT_SERVICE_RUN_NICE_LEVEL=0
 	rm -f "$MYSQL_PIDFILE"
 
 
 	TMPDIR=/tmp nice -n ${SERVICE_RUN_NICE_LEVEL:-$DEFAULT_SERVICE_RUN_NICE_LEVEL} \
-		/usr/bin/setsid /usr/sbin/mysqld \
+		/usr/bin/setsid /usr/sbin/percona-serverd \
 			--defaults-file=$MYSQL_CONFIG \
 			--datadir=$MYSQL_DATA_DIR \
 			--pid-file=$MYSQL_PIDFILE \
@@ -302,7 +302,7 @@ mysqlstart() {
 	# it takes longer for mysqld to start and create pidfile if it has to recover innodb transactions
 	if [ "$MYSQL_STATUS" = "starting" ]; then
 		echo ""
-		show "Waiting for MySQL to start"
+		show "Waiting for percona-server to start"
 		busy
 
 		# while the pid is running, mysql is starting up
@@ -331,12 +331,12 @@ mysqlstart() {
 mysqlstop() {
 	local clusterdir="$1"
 	mysqlstatus "$clusterdir" stop
-	msg_stopping "MySQL $clusterdir"
+	msg_stopping "percona-server $clusterdir"
 	busy
 
 	# try graceful shutdown -- send shutdown command
 	# requires mysql_sysadmin user proper privs
-	/usr/bin/mysqladmin --defaults-file=$MYSQL_CONFIG ${MYSQL_SOCKET:+--socket=$MYSQL_SOCKET} shutdown >/dev/null 2>&1
+	/usr/bin/percona-serveradmin --defaults-file=$MYSQL_CONFIG ${MYSQL_SOCKET:+--socket=$MYSQL_SOCKET} shutdown >/dev/null 2>&1
 	mysqlstatus "$clusterdir" stop
 
 	if [ "$MYSQL_PID" != "unknown" ]; then
@@ -360,7 +360,7 @@ mysqlstop() {
 # report slave status
 # uses MYSQL_SOCKET - path to mysql socket
 slave_status() {
-	if [ ! -x /usr/bin/mysql ]; then
+	if [ ! -x /usr/bin/percona-server ]; then
 		echo >&2 "Slave status not available: 'mysql' program not installed."
 		return
 	fi
@@ -426,76 +426,76 @@ mysqlsubsys() {
 	for mysqldir in $DB_CLUSTERS; do
 		mysqlstatus "$mysqldir"
 		if [ "$MYSQL_STATUS" = "running" ]; then
-			touch /var/lock/subsys/mysql
+			touch /var/lock/subsys/percona-server
 			return
 		fi
 	done
-	rm -f /var/lock/subsys/mysql
+	rm -f /var/lock/subsys/percona-server
 }
 
 mysqlinit() {
 	local clusterdir="$1"
 
-	if [ -f /etc/mysqld.conf ]; then
+	if [ -f /etc/percona-serverd.conf ]; then
 		nls "Running in \`no cluster compat' mode: can't initialize database."
-		nls "Move /etc/mysqld.conf away and rerun \`$0 init' (new config will be in $clusterdir)."
+		nls "Move /etc/percona-serverd.conf away and rerun \`$0 init' (new config will be in $clusterdir)."
 		exit 1
 	fi
 
-	if [ -f "$clusterdir/mysqld.conf" ]; then
+	if [ -f "$clusterdir/percona-serverd.conf" ]; then
 		mysqlgetconfig "$clusterdir"
 	else
 		MYSQL_USER="mysql"
 		MYSQL_CLUSTER_DIR="$clusterdir"
-		MYSQL_DATA_DIR="$clusterdir/mysqldb/db"
-		MYSQL_PIDFILE="$clusterdir/mysqldb/mysql.pid"
-		MYSQL_SOCKET="$clusterdir/mysqldb/mysql.sock"
+		MYSQL_DATA_DIR="$clusterdir/percona-serverdb/db"
+		MYSQL_PIDFILE="$clusterdir/percona-serverdb/percona-server.pid"
+		MYSQL_SOCKET="$clusterdir/percona-serverdb/percona-server.sock"
 
 		# this $MYSQL_CONFIG will be created later
-		MYSQL_CONFIG="$MYSQL_CLUSTER_DIR/mysqld.conf"
+		MYSQL_CONFIG="$MYSQL_CLUSTER_DIR/percona-serverd.conf"
 	fi
 
 	show "Initializing cluster %s" "$clusterdir"; started
 
 	# Check if not exist init database
-	if [ -d "$MYSQL_DATA_DIR/mysql" ]; then
-		nls "Seems that database is initialized now. Remove by hand %s" "$MYSQL_DATA_DIR/mysql"
+	if [ -d "$MYSQL_DATA_DIR/percona-server" ]; then
+		nls "Seems that database is initialized now. Remove by hand %s" "$MYSQL_DATA_DIR/percona-server"
 		nls "before initializing database."
 		nls "For now skipping cluster %s." "$clusterdir"
 		exit 6
 	fi
 
-	show "Installing MySQL system tables for $MYSQL_DATA_DIR"
+	show "Installing percona-server system tables for $MYSQL_DATA_DIR"
 	busy
 	TMP=/tmp TMPDIR=/tmp
 
 	mkdir -p "$MYSQL_DATA_DIR" > /dev/null 2>&1
 	# Using mysql:mysql for MYSQL_CLUSTER_DIR is creating SECURITY hole, root:root is proper
 	chown root:root "$MYSQL_CLUSTER_DIR"
-	chown mysql:mysql "$MYSQL_CLUSTER_DIR/mysqldb" "$MYSQL_DATA_DIR" > /dev/null 2>&1
-	chmod 751 "$MYSQL_CLUSTER_DIR" "$MYSQL_CLUSTER_DIR/mysqldb"
+	chown mysql:mysql "$MYSQL_CLUSTER_DIR/percona-serverdb" "$MYSQL_DATA_DIR" > /dev/null 2>&1
+	chmod 751 "$MYSQL_CLUSTER_DIR" "$MYSQL_CLUSTER_DIR/percona-serverdb"
 
-	if [ -f $sharedir/mysqld.conf -a ! -f "$MYSQL_CLUSTER_DIR/mysqld.conf" ]; then
+	if [ -f $sharedir/percona-serverd.conf -a ! -f "$MYSQL_CLUSTER_DIR/percona-serverd.conf" ]; then
 		sed -e "
 			s#\(datadir.*\)=.*#\1= $MYSQL_DATA_DIR#g;
 			s#\(pid-file.*\)=.*#\1= $MYSQL_PIDFILE#g;
 			s#\(socket.*\)=.*#\1= $MYSQL_SOCKET#g;
 			s#@clusterdir@#$MYSQL_CLUSTER_DIR#g;
-		" $sharedir/mysqld.conf > "$MYSQL_CLUSTER_DIR/mysqld.conf"
-		chown root:root "$MYSQL_CLUSTER_DIR/mysqld.conf"
-		chmod 640 "$MYSQL_CLUSTER_DIR/mysqld.conf"
+		" $sharedir/percona-serverd.conf > "$MYSQL_CLUSTER_DIR/percona-serverd.conf"
+		chown root:root "$MYSQL_CLUSTER_DIR/percona-serverd.conf"
+		chmod 640 "$MYSQL_CLUSTER_DIR/percona-serverd.conf"
 	fi
 
-	cat > $MYSQL_DATA_DIR/mysql-init.sql <<-EOF
+	cat > $MYSQL_DATA_DIR/percona-server-init.sql <<-EOF
 		CREATE DATABASE mysql;
 		use mysql;
-		$(cat $sharedir/mysql_system_tables.sql)
-		$(sed -e "/@current_hostname/d" $sharedir/mysql_system_tables_data.sql)
+		$(cat $sharedir/percona-server_system_tables.sql)
+		$(sed -e "/@current_hostname/d" $sharedir/percona-server_system_tables_data.sql)
 EOF
 
 	ok=0
-	/usr/sbin/mysqld \
-		--defaults-file=$MYSQL_CLUSTER_DIR/mysqld.conf \
+	/usr/sbin/percona-serverd \
+		--defaults-file=$MYSQL_CLUSTER_DIR/percona-serverd.conf \
 		--bootstrap \
 		--skip-grant-tables \
 		--datadir=$MYSQL_DATA_DIR \
@@ -503,15 +503,15 @@ EOF
 		--slave-load-tmpdir=$MYSQL_DATA_DIR \
 		--tmpdir=$MYSQL_DATA_DIR \
 		--log-error=$MYSQL_ERRLOG \
-		< $MYSQL_DATA_DIR/mysql-init.sql && ok=1
-	[ -f $MYSQL_DATA_DIR/mysql/user.frm ] || ok=0
+		< $MYSQL_DATA_DIR/percona-server-init.sql && ok=1
+	[ -f $MYSQL_DATA_DIR/percona-server/user.frm ] || ok=0
 
 	if [ "$ok" = 1 ]; then
-		rm -f $MYSQL_DATA_DIR/mysql-init.sql
+		rm -f $MYSQL_DATA_DIR/percona-server-init.sql
 		ok
 		cat << END_OF_MSG
 
-PLEASE REMEMBER TO SET A PASSWORD FOR THE MySQL USERS!
+PLEASE REMEMBER TO SET A PASSWORD FOR THE percona-server USERS!
 This is done, after starting database, in the order shown,
 with:
 
@@ -529,8 +529,8 @@ END_OF_MSG
 		show "Filling help tables..."
 		ok=0
 		( echo "use mysql;"; cat $sharedir/fill_help_tables.sql ) | \
-			/usr/sbin/mysqld \
-			--defaults-file=$MYSQL_CLUSTER_DIR/mysqld.conf \
+			/usr/sbin/percona-serverd \
+			--defaults-file=$MYSQL_CLUSTER_DIR/percona-serverd.conf \
 			--bootstrap \
 			--skip-grant-tables \
 			--datadir=$MYSQL_DATA_DIR \
@@ -558,9 +558,9 @@ ERROR: Installation of grant tables FAILED!
 ERROR:
 ERROR:
 
-The initialization SQL script was preserved at $MYSQL_DATA_DIR/mysql-init.sql
+The initialization SQL script was preserved at $MYSQL_DATA_DIR/percona-server-init.sql
 
-Examine the logs in /var/log/mysql for more information. You can
+Examine the logs in /var/log/percona-server for more information. You can
 also try to start the mysqld daemon with:
 
 /usr/sbin/mysqld --skip-grant &
@@ -572,28 +572,28 @@ shell> mysql -u mysql mysql
 mysql> show tables
 
 Try 'mysqld --help' if you have problems with paths. Setting on
-logging in $MYSQL_DATA_DIR/mysqld.conf gives you a log in /var/log/mysql/query.log that
-may be helpful. The latest information about MySQL is available on the
-web at http://www.mysql.com/.
+logging in $MYSQL_DATA_DIR/percona-serverd.conf gives you a log in /var/log/percona-server/query.log that
+may be helpful. The latest information about percona-server is available on the
+web at https://www.percona.com/software/mysql-database/percona-server.
 
 Please check PLD Linux ftp site for newer versions of this package.
 
-Please consult the MySQL manual section: 'Problems running
+Please consult the percona-server manual section: 'Problems running
 mysql_install_db', and the manual section that describes problems on
-your OS. Another information source is the MySQL email archive.
+your OS. Another information source is the percona-server email archive.
 
 END_OF_MSG
 		exit 1
 	fi
 
 	# if it's first server, register as default
-	if [ ! -e /var/lib/mysql/mysql.sock ] || [ -L /var/lib/mysql/mysql.sock ] && [ -z "$(readlink /var/lib/mysql/mysql.sock)" ]; then
-		sock=${MYSQL_SOCKET#/var/lib/mysql/} # make it relative if possible
-		ln -s "$sock" /var/lib/mysql/mysql.sock
+	if [ ! -e /var/lib/percona-server/percona-server.sock ] || [ -L /var/lib/percona-server/percona-server.sock ] && [ -z "$(readlink /var/lib/percona-server/percona-server.sock)" ]; then
+		sock=${MYSQL_SOCKET#/var/lib/percona-server/} # make it relative if possible
+		ln -s "$sock" /var/lib/percona-server/percona-server.sock
 	fi
 	# same for config, move to /etc
-	if [ ! -e /etc/mysql/mysqld.conf ]; then
-		mv "$MYSQL_CLUSTER_DIR/mysqld.conf" /etc/mysql/mysqld.conf
+	if [ ! -e /etc/percona-server/percona-serverd.conf ]; then
+		mv "$MYSQL_CLUSTER_DIR/percona-serverd.conf" /etc/percona-server/percona-serverd.conf
 	fi
 }
 
@@ -606,7 +606,7 @@ start() {
 	for mysqldir in $DB_CLUSTERS; do
 		mysqlstatus "$mysqldir" start
 		if [ "$MYSQL_STATUS" = "running" ]; then
-			msg_already_running "MySQL $mysqldir"
+			msg_already_running "percona-server $mysqldir"
 		else
 			mysqlstart "$mysqldir"
 		fi
@@ -619,7 +619,7 @@ stop() {
 	for mysqldir in $DB_CLUSTERS; do
 		mysqlstatus "$mysqldir" stop
 		if [ "$MYSQL_STATUS" = "not running" ]; then
-			msg_not_running "MySQL $mysqldir"
+			msg_not_running "percona-server $mysqldir"
 		else
 			mysqlstop "$mysqldir"
 		fi
@@ -628,8 +628,8 @@ stop() {
 }
 
 condrestart() {
-	if [ ! -f /var/lock/subsys/mysql ]; then
-		msg_not_running "MySQL"
+	if [ ! -f /var/lock/subsys/percona-server ]; then
+		msg_not_running "percona-server"
 		RETVAL=$1
 		return
 	fi
@@ -647,9 +647,9 @@ status() {
 			RETVAL=0
 			addr=${MYSQL_BIND_ADDRESS:-0.0.0.0}
 			port=${MYSQL_PORT:-3306}
-			socket=${MYSQL_SOCKET:-/var/lib/mysql/mysql.sock}
+			socket=${MYSQL_SOCKET:-/var/lib/percona-server/percona-server.sock}
 			pid=$MYSQL_PID
-			nls "MySQL cluster %s, pid %s\n" "$mysqldir" "$pid"
+			nls "percona-server cluster %s, pid %s\n" "$mysqldir" "$pid"
 			[ -z "$MYSQL_SKIP_NETWORKING" ] && nls "\ttcp:%s:%s\n" "$addr" "$port"
 			nls "\tunix: %s\n" "$socket"
 
@@ -658,7 +658,7 @@ status() {
 			pids="$pids/$MYSQL_PID/"
 			progress "$MYSQL_STATUS"
 		else
-			show "MySQL cluster %s" "$mysqldir"
+			show "percona-server cluster %s" "$mysqldir"
 			progress "$MYSQL_STATUS" "$CFAIL"
 		fi
 		echo
@@ -671,18 +671,18 @@ status() {
 	done
 
 	if [ $# = 1 -a "$running" ]; then
-		nls "Warning: MySQL Daemon processes not under clusters.conf control:"
+		nls "Warning: percona-server Daemon processes not under clusters.conf control:"
 		# see if we can display their status
 		for pid in $running; do
 			datadir=$(cat /proc/$pid/cmdline | tr '\0' '\n' | fgrep -- --datadir=)
 			datadir=${datadir#--datadir=} # strip --datadir
-			mysqldir=${datadir%/mysqldb/db} # strip /mysqldb/db
+			mysqldir=${datadir%/percona-serverdb/db} # strip /percona-serverdb/db
 			mysqlstatus "$mysqldir"
 			if [ "$MYSQL_STATUS" = "running" ]; then
 				addr=${MYSQL_BIND_ADDRESS:-0.0.0.0}
 				port=${MYSQL_PORT:-3306}
-				socket=${MYSQL_SOCKET:-/var/lib/mysql/mysql.sock}
-				nls "MySQL cluster %s, pid %s\n" "$mysqldir" "$pid"
+				socket=${MYSQL_SOCKET:-/var/lib/percona-server/percona-server.sock}
+				nls "percona-server cluster %s, pid %s\n" "$mysqldir" "$pid"
 				[ -z "$MYSQL_SKIP_NETWORKING" ] && nls "\ttcp:%s:%s\n" "$addr" "$port"
 				nls "\tunix: %s\n" "$socket"
 
@@ -690,7 +690,7 @@ status() {
 
 				progress "$MYSQL_STATUS"
 			else
-				show "MySQL cluster %s" "$mysqldir"
+				show "percona-server cluster %s" "$mysqldir"
 				progress "$MYSQL_STATUS" "$CFAIL"
 			fi
 			echo

@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# mysql-ndb		This shell script takes care of starting and stopping mysql-ndb.
+# percona-server-ndb		This shell script takes care of starting and stopping percona-server-ndb.
 #
 # chkconfig:	2345 80 30
-# description:	mysql-ndb is a mysql NDB engine
+# description:	percona-server-ndb is a percona-server NDB engine
 #
 # processname:	ndbd
 
@@ -14,14 +14,14 @@
 . /etc/sysconfig/network
 
 # Source oident configureation.
-if [ -f /etc/sysconfig/mysql-ndb ]; then
-	. /etc/sysconfig/mysql-ndb
+if [ -f /etc/sysconfig/percona-server-ndb ]; then
+	. /etc/sysconfig/percona-server-ndb
 fi
 
 # Check that networking is up.
 if is_yes "${NETWORKING}"; then
 	if [ ! -f /var/lock/subsys/network -a "$1" != stop -a "$1" != status ]; then
-		msg_network_down mysql-ndb
+		msg_network_down percona-server-ndb
 		exit 1
 	fi
 else
@@ -30,33 +30,33 @@ fi
 
 start() {
 	# Start daemons.
-	if [ ! -f /var/lock/subsys/mysql-ndb ]; then
-		msg_starting "mysql ndbd"
+	if [ ! -f /var/lock/subsys/percona-server-ndb ]; then
+		msg_starting "percona-server ndbd"
 		daemon ndbd $MYSQL_NDB_OPT
 		RETVAL=$?
-		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/mysql-ndb
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/percona-server-ndb
 	else
-		msg_already_running "mysql ndbd"
+		msg_already_running "percona-server ndbd"
 	fi
 }
 
 stop() {
 	# Stop daemons.
-	if [ -f /var/lock/subsys/mysql-ndb ]; then
-		msg_stopping "mysql ndbd"
+	if [ -f /var/lock/subsys/percona-server-ndb ]; then
+		msg_stopping "percona-server ndbd"
 		killproc ndbd
-		rm -f /var/lock/subsys/mysql-ndb >/dev/null 2>&1
+		rm -f /var/lock/subsys/percona-server-ndb >/dev/null 2>&1
 	else
-		msg_not_running "mysql ndbd"
+		msg_not_running "percona-server ndbd"
 	fi
 }
 
 condrestart() {
-	if [ -f /var/lock/subsys/mysql-ndb ]; then
+	if [ -f /var/lock/subsys/percona-server-ndb ]; then
 		stop
 		start
 	else
-		msg_not_running "mysql ndbd"
+		msg_not_running "percona-server ndbd"
 		RETVAL=$1
 	fi
 }

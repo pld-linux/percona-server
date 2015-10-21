@@ -1,9 +1,9 @@
 #!/bin/sh
 #
-# mysql-ndb-mgm		This shell script takes care of starting and stopping mysql-ndb-mgm.
+# percona-server-ndb-mgm		This shell script takes care of starting and stopping percona-server-ndb-mgm.
 #
 # chkconfig:	2345 80 30
-# description:	mysql-ndb-mgm is a mysql NDB engine
+# description:	percona-server-ndb-mgm is a percona-server NDB engine
 #
 # processname:	ndbd
 
@@ -14,14 +14,14 @@
 . /etc/sysconfig/network
 
 # Source oident configureation.
-if [ -f /etc/sysconfig/mysql-ndb-mgm ]; then
-	. /etc/sysconfig/mysql-ndb-mgm
+if [ -f /etc/sysconfig/percona-server-ndb-mgm ]; then
+	. /etc/sysconfig/percona-server-ndb-mgm
 fi
 
 # Check that networking is up.
 if is_yes "${NETWORKING}"; then
 	if [ ! -f /var/lock/subsys/network -a "$1" != stop -a "$1" != status ]; then
-		msg_network_down mysql-ndb-mgm
+		msg_network_down percona-server-ndb-mgm
 		exit 1
 	fi
 else
@@ -30,33 +30,33 @@ fi
 
 start() {
 	# Start daemons.
-	if [ ! -f /var/lock/subsys/mysql-ndb-mgm ]; then
-		msg_starting "mysql ndb_mgmd"
+	if [ ! -f /var/lock/subsys/percona-server-ndb-mgm ]; then
+		msg_starting "percona-server ndb_mgmd"
 		daemon ndb_mgmd $MYSQL_NDB_MGM_OPT
 		RETVAL=$?
-		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/mysql-ndb-mgm
+		[ $RETVAL -eq 0 ] && touch /var/lock/subsys/percona-server-ndb-mgm
 	else
-		msg_already_running "mysql ndb_mgmd"
+		msg_already_running "percona-server ndb_mgmd"
 	fi
 }
 
 stop() {
 	# Stop daemons.
-	if [ -f /var/lock/subsys/mysql-ndb-mgm ]; then
-		msg_stopping "mysql ndb_mgmd"
+	if [ -f /var/lock/subsys/percona-server-ndb-mgm ]; then
+		msg_stopping "percona-server ndb_mgmd"
 		killproc ndbd
-		rm -f /var/lock/subsys/mysql-ndb-mgm >/dev/null 2>&1
+		rm -f /var/lock/subsys/percona-server-ndb-mgm >/dev/null 2>&1
 	else
-		msg_not_running "mysql ndb_mgmd"
+		msg_not_running "percona-server ndb_mgmd"
 	fi
 }
 
 condrestart() {
-	if [ -f /var/lock/subsys/mysql-ndb-mgm ]; then
+	if [ -f /var/lock/subsys/percona-server-ndb-mgm ]; then
 		stop
 		start
 	else
-		msg_not_running "mysql ndb_mgmd"
+		msg_not_running "percona-server ndb_mgmd"
 		RETVAL=$1
 	fi
 }

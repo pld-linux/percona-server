@@ -23,32 +23,30 @@
 %bcond_with	tests		# FIXME: don't run correctly
 %bcond_with	ndb		# NDB is now a separate product, this here is broken, so disable it
 
-%define		rel	1
+%define		rel	0.1
 %define		percona_rel	74.0
 %include	/usr/lib/rpm/macros.perl
-Summary:	MySQL: a very fast and reliable SQL database engine
-Summary(de.UTF-8):	MySQL: ist eine SQL-Datenbank
-Summary(fr.UTF-8):	MySQL: un serveur SQL rapide et fiable
-Summary(pl.UTF-8):	MySQL: bardzo szybka i niezawodna baza danych (SQL)
-Summary(pt_BR.UTF-8):	MySQL: Um servidor SQL rápido e confiável
-Summary(ru.UTF-8):	MySQL - быстрый SQL-сервер
-Summary(uk.UTF-8):	MySQL - швидкий SQL-сервер
-Summary(zh_CN.UTF-8):	MySQL数据库服务器
-Name:		mysql
+Summary:	Percona Server: a very fast and reliable SQL database engine
+Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
+Summary(fr.UTF-8):	Percona Server: un serveur SQL rapide et fiable
+Summary(pl.UTF-8):	Percona Server: bardzo szybka i niezawodna baza danych (SQL)
+Summary(pt_BR.UTF-8):	Percona Server: Um servidor SQL rápido e confiável
+Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
+Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
+Summary(zh_CN.UTF-8):	Percona Server数据库服务器
+Name:		percona-server
 Version:	5.6.26
 Release:	%{percona_rel}.%{rel}
-License:	GPL + MySQL FLOSS Exception
+License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
-# Source0Download: http://dev.mysql.com/downloads/mysql/5.5.html#downloads
-# Source0:	http://vesta.informatik.rwth-aachen.de/mysql/Downloads/MySQL-5.5/%{name}-%{version}.tar.gz
-Source0:	http://www.percona.com/downloads/Percona-Server-5.6/LATEST/source/tarball/percona-server-%{version}-%{percona_rel}.tar.gz
+Source0:	http://www.percona.com/downloads/Percona-Server-5.6/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
 # Source0-md5:	172f420ec779e8902b6a92048088d528
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.10-release.tar.gz
 # Source100-md5:	dda52b24d8348fc09e26d8a649a231d2
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
-Source4:	%{name}d.conf
+Source4:	mysqld.conf
 Source5:	%{name}-clusters.conf
 Source7:	%{name}-ndb.init
 Source8:	%{name}-ndb.sysconfig
@@ -58,31 +56,31 @@ Source11:	%{name}-ndb-cpc.init
 Source12:	%{name}-ndb-cpc.sysconfig
 Source13:	%{name}-client.conf
 Source14:	my.cnf
-Patch0:		%{name}-opt.patch
-Patch1:		%{name}-versioning.patch
-Patch2:		%{name}hotcopy-5.0-5.5.patch
+Patch0:		mysql-opt.patch
+Patch1:		mysql-versioning.patch
+Patch2:		mysqlhotcopy-5.0-5.5.patch
 Patch3:		bug-67402.patch
-Patch4:		%{name}-no-default-secure-auth.patch
-Patch5:		%{name}-system-libhsclient.patch
+Patch4:		mysql-no-default-secure-auth.patch
+Patch5:		mysql-system-libhsclient.patch
 # from fedora
-Patch6:		%{name}-system-users.patch
+Patch6:		mysql-system-users.patch
 
-Patch9:		%{name}-build.patch
-Patch11:	%{name}-upgrade.patch
-Patch12:	%{name}-config.patch
-Patch14:	%{name}-bug-43594.patch
-Patch18:	%{name}-sphinx.patch
-Patch19:	%{name}-chain-certs.patch
+Patch9:		mysql-build.patch
+Patch11:	mysql-upgrade.patch
+Patch12:	mysql-config.patch
+Patch14:	mysql-bug-43594.patch
+Patch18:	mysql-sphinx.patch
+Patch19:	mysql-chain-certs.patch
 # from fedora
-Patch20:	%{name}-dubious-exports.patch
+Patch20:	mysql-dubious-exports.patch
 
 Patch22:	bug-66589.patch
 Patch23:	bug-44278.patch
-Patch24:	%{name}-cmake.patch
+Patch24:	mysql-cmake.patch
 
 Patch26:	mysqldumpslow-clusters.patch
 Patch27:	x32.patch
-URL:		http://www.mysql.com/products/community/
+URL:		https://www.percona.com/software/mysql-database/percona-server
 BuildRequires:	bison >= 1.875
 BuildRequires:	cmake >= 2.6
 BuildRequires:	readline-devel >= 6.2
@@ -117,7 +115,7 @@ Requires:	%{name}-charsets = %{version}-%{release}
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	/usr/bin/setsid
 Requires:	rc-scripts >= 0.2.0
-Suggests:	mysql-client
+Suggests:	percona-server-client
 %{?with_tcpd:Suggests:	tcp_wrappers}
 Suggests:	vim-syntax-mycnf
 Provides:	MySQL-server
@@ -129,115 +127,119 @@ Obsoletes:	mysql-server
 Conflicts:	logrotate < 3.8.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
-%define		_orgname	percona-server
 %define		_libexecdir	%{_sbindir}
-%define		_localstatedir	/var/lib/mysql
-%define		_mysqlhome	/home/services/mysql
+%define		_localstatedir	/var/lib/%{name}
+%define		_perconahome	/home/services/%{name}
 
 %description
-MySQL is a true multi-user, multi-threaded SQL (Structured Query
-Language) database server. SQL is the most popular database language
-in the world. MySQL is a client/server implementation that consists of
-a server daemon mysqld and many different client programs/libraries.
+Percona Server is a true multi-user, multi-threaded SQL (Structured
+Query Language) database server. SQL is the most popular database
+language in the world. Percona Server is a client/server
+implementation that consists of a server daemon mysqld and many
+different client programs/libraries.
 
-The main goals of MySQL are speed, robustness and easy to use. MySQL
-was originally developed because we at Tcx needed a SQL server that
-could handle very big databases with magnitude higher speed than what
-any database vendor could offer to us. We have now been using MySQL
-since 1996 in a environment with more than 40 databases, 10,000
-tables, of which more than 500 have more than 7 million rows. This is
-about 50G of mission critical data.
+The main goals of Percona Server are speed, robustness and easy to
+use. Percona Server was originally developed because we at Tcx needed
+a SQL server that could handle very big databases with magnitude
+higher speed than what any database vendor could offer to us. We have
+now been using Percona Server since 1996 in a environment with more
+than 40 databases, 10,000 tables, of which more than 500 have more
+than 7 million rows. This is about 50G of mission critical data.
 
-The base upon which MySQL is built is a set of routines that have been
-used in a highly demanding production environment for many years.
-While MySQL is still in development, it already offers a rich and
-highly useful function set.
+The base upon which Percona Server is built is a set of routines that
+have been used in a highly demanding production environment for many
+years. While Percona Server is still in development, it already offers
+a rich and highly useful function set.
 
 %description -l fr.UTF-8
-MySQL est un serveur de bases de donnees SQL vraiment multi-usagers et
-multi-taches. Le langage SQL est le langage de bases de donnees le
-plus populaire au monde. MySQL est une implementation client/serveur
-qui consiste en un serveur (mysqld) et differents
-programmes/bibliotheques clientes.
+Percona Server est un serveur de bases de donnees SQL vraiment
+multi-usagers et multi-taches. Le langage SQL est le langage de bases
+de donnees le plus populaire au monde. Percona Server est une
+implementation client/serveur qui consiste en un serveur (mysqld) et
+differents programmes/bibliotheques clientes.
 
-Les objectifs principaux de MySQL sont: vitesse, robustesse et
-facilite d'utilisation. MySQL fut originalement developpe parce que
-nous, chez Tcx, avions besoin d'un serveur SQL qui pouvait gerer de
-tres grandes bases de donnees avec une vitesse d'un ordre de magnitude
-superieur a ce que n'importe quel vendeur pouvait nous offrir. Nous
-utilisons MySQL depuis 1996 dans un environnement avec plus de 40
-bases de donnees, 10000 tables, desquelles plus de 500 ont plus de 7
-millions de lignes. Ceci represente environ 50G de donnees critiques.
+Les objectifs principaux de Percona Server sont: vitesse, robustesse
+et facilite d'utilisation. Percona Server fut originalement developpe
+parce que nous, chez Tcx, avions besoin d'un serveur SQL qui pouvait
+gerer de tres grandes bases de donnees avec une vitesse d'un ordre de
+magnitude superieur a ce que n'importe quel vendeur pouvait nous
+offrir. Nous utilisons Percona Server depuis 1996 dans un
+environnement avec plus de 40 bases de donnees, 10000 tables,
+desquelles plus de 500 ont plus de 7 millions de lignes. Ceci
+represente environ 50G de donnees critiques.
 
-A la base de la conception de MySQL, on retrouve une serie de routines
-qui ont ete utilisees dans un environnement de production pendant
-plusieurs annees. Meme si MySQL est encore en developpement, il offre
-deja une riche et utile serie de fonctions.
+A la base de la conception de Percona Server, on retrouve une serie de
+routines qui ont ete utilisees dans un environnement de production
+pendant plusieurs annees. Meme si Percona Server est encore en
+developpement, il offre deja une riche et utile serie de fonctions.
 
 %description -l pl.UTF-8
-MySQL to prawdziwie wieloużytkownikowy, wielowątkowy serwer baz danych
-SQL. SQL jest najpopularniejszym na świecie językiem używanym do baz
-danych. MySQL to implementacja klient/serwer składająca się z demona
-mysqld i wielu różnych programów i bibliotek klienckich.
+Percona Server to prawdziwie wieloużytkownikowy, wielowątkowy serwer
+baz danych SQL. SQL jest najpopularniejszym na świecie językiem
+używanym do baz danych. Percona Server to implementacja klient/serwer
+składająca się z demona mysqld i wielu różnych programów i bibliotek
+klienckich.
 
-Głównymi celami MySQL-a są szybkość, potęga i łatwość użytkowania.
-MySQL oryginalnie był tworzony, ponieważ autorzy w Tcx potrzebowali
-serwera SQL do obsługi bardzo dużych baz danych z szybkością o wiele
-większą, niż mogli zaoferować inni producenci baz danych. Używają go
-od 1996 roku w środowisku z ponad 40 bazami danych, 10 000 tabel, z
-których ponad 500 zawiera ponad 7 milionów rekordów - w sumie około
-50GB krytycznych danych.
+Głównymi celami Percona Server-a są szybkość, potęga i łatwość
+użytkowania. Percona Server oryginalnie był tworzony, ponieważ autorzy
+w Tcx potrzebowali serwera SQL do obsługi bardzo dużych baz danych z
+szybkością o wiele większą, niż mogli zaoferować inni producenci baz
+danych. Używają go od 1996 roku w środowisku z ponad 40 bazami danych,
+10 000 tabel, z których ponad 500 zawiera ponad 7 milionów rekordów -
+w sumie około 50GB krytycznych danych.
 
-Baza, na której oparty jest MySQL, składa się ze zbioru procedur,
-które były używane w bardzo wymagającym środowisku produkcyjnym przez
-wiele lat. Pomimo, że MySQL jest ciągle rozwijany, już oferuje bogaty
-i użyteczny zbiór funkcji.
+Baza, na której oparty jest Percona Server, składa się ze zbioru
+procedur, które były używane w bardzo wymagającym środowisku
+produkcyjnym przez wiele lat. Pomimo, że Percona Server jest ciągle
+rozwijany, już oferuje bogaty i użyteczny zbiór funkcji.
 
 %description -l de.UTF-8
-MySQL ist eine SQL-Datenbank. Allerdings ist sie im Gegensatz zu
-Oracle, DB2 oder PostgreSQL keine relationale Datenbank. Die Daten
+Percona Server ist eine SQL-Datenbank. Allerdings ist sie im Gegensatz
+zu Oracle, DB2 oder PostgreSQL keine relationale Datenbank. Die Daten
 werden zwar in zweidimensionalen Tabellen gespeichert und können mit
 einem Primärschlüssel versehen werden. Es ist aber keine Definition
 eines Fremdschlüssels möglich. Der Benutzer ist somit bei einer
-MySQL-Datenbank völlig allein für die (referenzielle) Integrität der
-Daten verantwortlich. Allein durch die Nutzung externer
+Percona Server-Datenbank völlig allein für die (referenzielle)
+Integrität der Daten verantwortlich. Allein durch die Nutzung externer
 Tabellenformate, wie InnoDB bzw Berkeley DB wird eine Relationalität
-ermöglicht. Diese Projekte sind aber getrennt von MySQL zu betrachten.
+ermöglicht. Diese Projekte sind aber getrennt von Percona Server zu
+betrachten.
 
 %description -l pt_BR.UTF-8
-O MySQL é um servidor de banco de dados SQL realmente multiusuário e
-multi-tarefa. A linguagem SQL é a mais popular linguagem para banco de
-dados no mundo. O MySQL é uma implementação cliente/servidor que
-consiste de um servidor chamado mysqld e diversos
-programas/bibliotecas clientes. Os principais objetivos do MySQL são:
-velocidade, robustez e facilidade de uso. O MySQL foi originalmente
-desenvolvido porque nós na Tcx precisávamos de um servidor SQL que
-pudesse lidar com grandes bases de dados e com uma velocidade muito
-maior do que a que qualquer vendedor podia nos oferecer. Estamos
-usando o MySQL desde 1996 em um ambiente com mais de 40 bases de dados
-com 10.000 tabelas, das quais mais de 500 têm mais de 7 milhões de
-linhas. Isto é o equivalente a aproximadamente 50G de dados críticos.
-A base da construção do MySQL é uma série de rotinas que foram usadas
-em um ambiente de produção com alta demanda por muitos anos. Mesmo o
-MySQL estando ainda em desenvolvimento, ele já oferece um conjunto de
+O Percona Server é um servidor de banco de dados SQL realmente
+multiusuário e multi-tarefa. A linguagem SQL é a mais popular
+linguagem para banco de dados no mundo. O Percona Server é uma
+implementação cliente/servidor que consiste de um servidor chamado
+mysqld e diversos programas/bibliotecas clientes. Os principais
+objetivos do Percona Server são: velocidade, robustez e facilidade de
+uso. O Percona Server foi originalmente desenvolvido porque nós na Tcx
+precisávamos de um servidor SQL que pudesse lidar com grandes bases de
+dados e com uma velocidade muito maior do que a que qualquer vendedor
+podia nos oferecer. Estamos usando o Percona Server desde 1996 em um
+ambiente com mais de 40 bases de dados com 10.000 tabelas, das quais
+mais de 500 têm mais de 7 milhões de linhas. Isto é o equivalente a
+aproximadamente 50G de dados críticos. A base da construção do Percona
+Server é uma série de rotinas que foram usadas em um ambiente de
+produção com alta demanda por muitos anos. Mesmo o Percona Server
+estando ainda em desenvolvimento, ele já oferece um conjunto de
 funções muito ricas e úteis. Veja a documentação para maiores
 informações.
 
 %description -l ru.UTF-8
-MySQL - это SQL (Structured Query Language) сервер базы данных. MySQL
-была написана Michael'ом (monty) Widenius'ом. См. файл CREDITS в
-дистрибутиве на предмет других участников проекта и прочей информации
-о MySQL.
+Percona Server - это SQL (Structured Query Language) сервер базы
+данных. Percona Server была написана Michael'ом (monty) Widenius'ом.
+См. файл CREDITS в дистрибутиве на предмет других участников проекта и
+прочей информации о Percona Server.
 
 %description -l uk.UTF-8
-MySQL - це SQL (Structured Query Language) сервер бази даних. MySQL
-було написано Michael'ом (monty) Widenius'ом. Див. файл CREDITS в
-дистрибутиві для інформації про інших учасників проекту та іншої
-інформації.
+Percona Server - це SQL (Structured Query Language) сервер бази даних.
+Percona Server було написано Michael'ом (monty) Widenius'ом. Див. файл
+CREDITS в дистрибутиві для інформації про інших учасників проекту та
+іншої інформації.
 
 %package charsets
-Summary:	MySQL - character sets definitions
-Summary(pl.UTF-8):	MySQL - definicje kodowań znaków
+Summary:	Percona Server - character sets definitions
+Summary(pl.UTF-8):	Percona Server - definicje kodowań znaków
 Group:		Applications/Databases
 
 %description charsets
@@ -248,13 +250,13 @@ and server.
 Ten pakiet zawiera definicje kodowań znaków potrzebne dla serwera i
 klienta.
 
-%package -n mysqlhotcopy
-Summary:	mysqlhotcopy - A MySQL database backup program
-Summary(pl.UTF-8):	mysqlhotcopy - program do tworzenia kopii zapasowych baz MySQL
+%package mysqlhotcopy
+Summary:	mysqlhotcopy - A Percona Server database backup program
+Summary(pl.UTF-8):	mysqlhotcopy - program do tworzenia kopii zapasowych baz Percona Server
 Group:		Applications/Databases
 Requires:	perl-DBD-mysql
 
-%description -n mysqlhotcopy
+%description mysqlhotcopy
 mysqlhotcopy uses LOCK TABLES, FLUSH TABLES, and cp or scp to make a
 database backup quickly. It is the fastest way to make a backup of the
 database or single tables, but it can be run only on the same machine
@@ -263,7 +265,7 @@ for backing up MyISAM and ARCHIVE tables.
 
 See innobackup package to backup InnoDB tables.
 
-%description -n mysqlhotcopy -l pl.UTF-8
+%description mysqlhotcopy -l pl.UTF-8
 mysqlhotcopy wykorzystuje LOCK TABLES, FLUSH TABLES oraz cp i scp do
 szybkiego tworzenia kopii zapasowych baz danych. Jest to najszybszy
 sposób wykonania kopii zapasowej bazy danych lub pojedynczych tabel,
@@ -275,41 +277,41 @@ Narzędzie do tworzenia kopii tabel InnoDB znajduje się w pakiecie
 innobackup.
 
 %package extras
-Summary:	MySQL additional utilities
-Summary(pl.UTF-8):	Dodatkowe narzędzia do MySQL
+Summary:	Percona Server additional utilities
+Summary(pl.UTF-8):	Dodatkowe narzędzia do Percona Server
 Group:		Applications/Databases
 Requires:	%{name}-client = %{version}-%{release}
 Requires:	%{name}-libs = %{version}-%{release}
 
 %description extras
-MySQL additional utilities except Perl scripts (they may be found in
-%{name}-extras-perl package).
+Percona Server additional utilities except Perl scripts (they may be
+found in %{name}-extras-perl package).
 
 %description extras -l pl.UTF-8
-Dodatkowe narzędzia do MySQL - z wyjątkiem skryptów Perla (które są w
-pakiecie %{name}-extras-perl).
+Dodatkowe narzędzia do Percona Server - z wyjątkiem skryptów Perla
+(które są w pakiecie %{name}-extras-perl).
 
 %package extras-perl
-Summary:	MySQL additional utilities written in Perl
-Summary(pl.UTF-8):	Dodatkowe narzędzia do MySQL napisane w Perlu
+Summary:	Percona Server additional utilities written in Perl
+Summary(pl.UTF-8):	Dodatkowe narzędzia do Percona Server napisane w Perlu
 Group:		Applications/Databases
 Requires:	%{name}-extras = %{version}-%{release}
 # this is just for the sake of smooth upgrade, not to break systems
 Requires:	mysqlhotcopy = %{version}-%{release}
-Requires:	perl(DBD::mysql)
+Requires:	perl-DBD-mysql
 
 %description extras-perl
-MySQL additional utilities written in Perl.
+Percona Server additional utilities written in Perl.
 
 %description extras-perl -l pl.UTF-8
-Dodatkowe narzędzia do MySQL napisane w Perlu.
+Dodatkowe narzędzia do Percona Server napisane w Perlu.
 
 %package client
-Summary:	MySQL - Client
-Summary(pl.UTF-8):	MySQL - Klient
-Summary(pt.UTF-8):	MySQL - Cliente
-Summary(ru.UTF-8):	MySQL клиент
-Summary(uk.UTF-8):	MySQL клієнт
+Summary:	Percona Server - Client
+Summary(pl.UTF-8):	Percona Server - Klient
+Summary(pt.UTF-8):	Percona Server - Cliente
+Summary(ru.UTF-8):	Percona Server клиент
+Summary(uk.UTF-8):	Percona Server клієнт
 Group:		Applications/Databases
 Requires:	%{name}-charsets = %{version}-%{release}
 Requires:	%{name}-libs = %{version}-%{release}
@@ -317,45 +319,45 @@ Requires:	readline >= 6.2
 Obsoletes:	MySQL-client
 
 %description client
-This package contains the standard MySQL clients.
+This package contains the standard Percona Server clients.
 
 %description client -l fr.UTF-8
-Ce package contient les clients MySQL standards.
+Ce package contient les clients Percona Server standards.
 
 %description client -l pl.UTF-8
-Standardowe programy klienckie MySQL.
+Standardowe programy klienckie Percona Server.
 
 %description client -l pt_BR.UTF-8
-Este pacote contém os clientes padrão para o MySQL.
+Este pacote contém os clientes padrão para o Percona Server.
 
 %description client -l ru.UTF-8
-Этот пакет содержит только клиент MySQL.
+Этот пакет содержит только клиент Percona Server.
 
 %description client -l uk.UTF-8
-Цей пакет містить тільки клієнта MySQL.
+Цей пакет містить тільки клієнта Percona Server.
 
 %package libs
-Summary:	Shared libraries for MySQL
-Summary(pl.UTF-8):	Biblioteki współdzielone MySQL
+Summary:	Shared libraries for Percona Server
+Summary(pl.UTF-8):	Biblioteki współdzielone Percona Server
 Group:		Libraries
 Obsoletes:	libmysql10
 Obsoletes:	mysql-doc < 4.1.12
 
 %description libs
-Shared libraries for MySQL.
+Shared libraries for Percona Server.
 
 %description libs -l pl.UTF-8
-Biblioteki współdzielone MySQL.
+Biblioteki współdzielone Percona Server.
 
 %package devel
-Summary:	MySQL - development header files and other files
-Summary(pl.UTF-8):	MySQL - Pliki nagłówkowe i inne dla programistów
-Summary(pt.UTF-8):	MySQL - Medições de desempenho
-Summary(ru.UTF-8):	MySQL - хедеры и библиотеки разработчика
-Summary(uk.UTF-8):	MySQL - хедери та бібліотеки програміста
+Summary:	Percona Server - development header files and other files
+Summary(pl.UTF-8):	Percona Server - Pliki nagłówkowe i inne dla programistów
+Summary(pt.UTF-8):	Percona Server - Medições de desempenho
+Summary(ru.UTF-8):	Percona Server - хедеры и библиотеки разработчика
+Summary(uk.UTF-8):	Percona Server - хедери та бібліотеки програміста
 Group:		Development/Libraries
 Requires:	%{name}-libs = %{version}-%{release}
-%{?with_ssl:Requires:	openssl-devel}
+%{?with_ssl:Requires: openssl-devel}
 Requires:	zlib-devel
 Obsoletes:	MySQL-devel
 Obsoletes:	libmysql10-devel
@@ -363,20 +365,21 @@ Obsoletes:	webscalesql-devel
 
 %description devel
 This package contains the development header files and other files
-necessary to develop MySQL client applications.
+necessary to develop Percona Server client applications.
 
 %description devel -l fr.UTF-8
 Ce package contient les fichiers entetes et les librairies de
 developpement necessaires pour developper des applications clientes
-MySQL.
+Percona Server.
 
 %description devel -l pl.UTF-8
 Pliki nagłówkowe i inne pliki konieczne do kompilacji aplikacji
-klienckich MySQL.
+klienckich Percona Server.
 
 %description devel -l pt_BR.UTF-8
 Este pacote contém os arquivos de cabeçalho (header files) e
-bibliotecas necessárias para desenvolver aplicações clientes do MySQL.
+bibliotecas necessárias para desenvolver aplicações clientes do
+Percona Server.
 
 %description devel -l ru.UTF-8
 Этот пакет содержит хедеры и библиотеки разработчика, необходимые для
@@ -387,19 +390,19 @@ bibliotecas necessárias para desenvolver aplicações clientes do MySQL.
 розробки програм-клієнтів.
 
 %package static
-Summary:	MySQL static libraries
-Summary(pl.UTF-8):	Biblioteki statyczne MySQL
-Summary(ru.UTF-8):	MySQL - статические библиотеки
-Summary(uk.UTF-8):	MySQL - статичні бібліотеки
+Summary:	Percona Server static libraries
+Summary(pl.UTF-8):	Biblioteki statyczne Percona Server
+Summary(ru.UTF-8):	Percona Server - статические библиотеки
+Summary(uk.UTF-8):	Percona Server - статичні бібліотеки
 Group:		Development/Libraries
 Requires:	%{name}-devel = %{version}-%{release}
 Obsoletes:	MySQL-static
 
 %description static
-MySQL static libraries.
+Percona Server static libraries.
 
 %description static -l pl.UTF-8
-Biblioteki statyczne MySQL.
+Biblioteki statyczne Percona Server.
 
 %description static -l ru.UTF-8
 Этот пакет содержит статические библиотеки разработчика, необходимые
@@ -410,11 +413,11 @@ Biblioteki statyczne MySQL.
 розробки програм-клієнтів.
 
 %package bench
-Summary:	MySQL - Benchmarks
-Summary(pl.UTF-8):	MySQL - Programy testujące szybkość działania bazy
-Summary(pt.UTF-8):	MySQL - Medições de desempenho
-Summary(ru.UTF-8):	MySQL - бенчмарки
-Summary(uk.UTF-8):	MySQL - бенчмарки
+Summary:	Percona Server - Benchmarks
+Summary(pl.UTF-8):	Percona Server - Programy testujące szybkość działania bazy
+Summary(pt.UTF-8):	Percona Server - Medições de desempenho
+Summary(ru.UTF-8):	Percona Server - бенчмарки
+Summary(uk.UTF-8):	Percona Server - бенчмарки
 Group:		Applications/Databases
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{name}-client
@@ -422,87 +425,88 @@ Requires:	perl(DBD::mysql)
 Obsoletes:	MySQL-bench
 
 %description bench
-This package contains MySQL benchmark scripts and data.
+This package contains Percona Server benchmark scripts and data.
 
 %description bench -l pl.UTF-8
-Programy testujące szybkość serwera MySQL.
+Programy testujące szybkość serwera Percona Server.
 
 %description bench -l pt_BR.UTF-8
-Este pacote contém medições de desempenho de scripts e dados do MySQL.
+Este pacote contém medições de desempenho de scripts e dados do
+Percona Server.
 
 %description bench -l ru.UTF-8
 Этот пакет содержит скрипты и данные для оценки производительности
-MySQL.
+Percona Server.
 
 %description bench -l uk.UTF-8
-Цей пакет містить скрипти та дані для оцінки продуктивності MySQL.
+Цей пакет містить скрипти та дані для оцінки продуктивності Percona
+Server.
 
 %package doc
-Summary:	MySQL manual
-Summary(pl.UTF-8):	Podręcznik użytkownika MySQL
+Summary:	Percona Server manual
+Summary(pl.UTF-8):	Podręcznik użytkownika Percona Server
 Group:		Applications/Databases
 
 %description doc
 This package contains manual in HTML format.
 
 %description doc -l pl.UTF-8
-Podręcznik MySQL-a w formacie HTML.
+Podręcznik Percona Server-a w formacie HTML.
 
 %package ndb
-Summary:	MySQL - NDB Storage Engine Daemon
-Summary(pl.UTF-8):	MySQL - demon silnika przechowywania danych NDB
+Summary:	Percona Server - NDB Storage Engine Daemon
+Summary(pl.UTF-8):	Percona Server - demon silnika przechowywania danych NDB
 Group:		Applications/Databases
 Requires:	%{name}-libs = %{version}-%{release}
 
 %description ndb
-This package contains the standard MySQL NDB Storage Engine Daemon.
+This package contains the standard Percona Server NDB Storage Engine
+Daemon.
 
 %description ndb -l pl.UTF-8
 Ten pakiet zawiera standardowego demona silnika przechowywania danych
 NDB.
 
 %package ndb-client
-Summary:	MySQL - NDB Clients
-Summary(pl.UTF-8):	MySQL - programy klienckie NDB
+Summary:	Percona Server - NDB Clients
+Summary(pl.UTF-8):	Percona Server - programy klienckie NDB
 Group:		Applications/Databases
 Requires:	%{name}-libs = %{version}-%{release}
 
 %description ndb-client
-This package contains the standard MySQL NDB Clients.
+This package contains the standard Percona Server NDB Clients.
 
 %description ndb-client -l pl.UTF-8
-Ten pakiet zawiera standardowe programy klienckie MySQL NDB.
+Ten pakiet zawiera standardowe programy klienckie Percona Server NDB.
 
 %package ndb-mgm
-Summary:	MySQL - NDB Management Daemon
-Summary(pl.UTF-8):	MySQL - demon zarządzający NDB
+Summary:	Percona Server - NDB Management Daemon
+Summary(pl.UTF-8):	Percona Server - demon zarządzający NDB
 Group:		Applications/Databases
 Requires:	%{name}-libs = %{version}-%{release}
 
 %description ndb-mgm
-This package contains the standard MySQL NDB Management Daemon.
+This package contains the standard Percona Server NDB Management
+Daemon.
 
 %description ndb-mgm -l pl.UTF-8
-Ten pakiet zawiera standardowego demona zarządzającego MySQL NDB.
+Ten pakiet zawiera standardowego demona zarządzającego Percona Server
+NDB.
 
 %package ndb-cpc
-Summary:	MySQL - NDB CPC Daemon
-Summary(pl.UTF-8):	MySQL - demon NDB CPC
+Summary:	Percona Server - NDB CPC Daemon
+Summary(pl.UTF-8):	Percona Server - demon NDB CPC
 Group:		Applications/Databases
 Requires:	%{name}-libs = %{version}-%{release}
 
 %description ndb-cpc
-This package contains the standard MySQL NDB CPC Daemon.
+This package contains the standard Percona Server NDB CPC Daemon.
 
 %description ndb-cpc -l pl.UTF-8
-Ten pakiet zawiera standardowego demona MySQL NDB CPC.
+Ten pakiet zawiera standardowego demona Percona Server NDB CPC.
 
 %prep
-%setup -q -n percona-server-%{version}-%{percona_rel} %{?with_sphinx:-a100}
-
-# we want to use old, mysql compatible client library name
-find . -name CMakeLists.txt -exec sed -i -e 's#perconaserverclient#mysqlclient#g' "{}" ";"
-sed -i -e 's#perconaserverclient#mysqlclient#g' libmysql/libmysql.{ver.in,map} scripts/mysql_config.*
+%setup -q -n %{name}-%{version}-%{percona_rel} %{?with_sphinx:-a100}
 
 %patch0 -p1
 
@@ -558,7 +562,7 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DCMAKE_BUILD_TYPE=%{!?debug:RelWithDebInfo}%{?debug:Debug} \
 	-DCMAKE_C_FLAGS_RELWITHDEBINFO="%{rpmcflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing" \
 	-DCMAKE_CXX_FLAGS_RELWITHDEBINFO="%{rpmcxxflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing" \
-	-DCOMPILATION_COMMENT="PLD/Linux Distribution MySQL RPM" \
+	-DCOMPILATION_COMMENT="PLD/Linux Distribution Percona Server RPM" \
 	-DCURSES_INCLUDE_PATH=/usr/include/ncurses \
 	%{?with_systemtap:-DENABLE_DTRACE=ON} \
 	-DFEATURE_SET="community" \
@@ -567,8 +571,8 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DINSTALL_MYSQLTESTDIR_RPM="" \
 	-DINSTALL_PLUGINDIR=%{_lib}/%{name}/plugin \
 	-DINSTALL_SQLBENCHDIR=%{_datadir} \
-	-DINSTALL_SUPPORTFILESDIR=share/%{_orgname}-support \
-	-DINSTALL_MYSQLSHAREDIR=share/%{_orgname} \
+	-DINSTALL_SUPPORTFILESDIR=share/%{name}-support \
+	-DINSTALL_MYSQLSHAREDIR=share/%{name} \
 	-DMYSQL_UNIX_ADDR=/var/lib/%{name}/%{name}.sock \
 	%{?debug:-DWITH_DEBUG=ON} \
 	-DWITHOUT_EXAMPLE_STORAGE_ENGINE=1 \
@@ -592,17 +596,17 @@ CPPFLAGS="%{rpmcppflags}" \
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT/etc/{logrotate.d,rc.d/init.d,sysconfig,mysql,skel} \
-	   $RPM_BUILD_ROOT/var/{log/{archive,}/mysql,lib/mysql} \
-	   $RPM_BUILD_ROOT%{_mysqlhome} \
+install -d $RPM_BUILD_ROOT/etc/{logrotate.d,rc.d/init.d,sysconfig,%{name},skel} \
+	   $RPM_BUILD_ROOT/var/{log/{archive,}/%{name},lib/%{name}} \
+	   $RPM_BUILD_ROOT%{_perconahome} \
 	   $RPM_BUILD_ROOT%{_libdir}
 
 %{__make} -C build install \
 	DESTDIR=$RPM_BUILD_ROOT
 
-install -p %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/mysql
-cp -a %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/mysql
-cp -a %{SOURCE3} $RPM_BUILD_ROOT/etc/logrotate.d/mysql
+install -p %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}
+cp -a %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/%{name}
+cp -a %{SOURCE3} $RPM_BUILD_ROOT/etc/logrotate.d/%{name}
 # This is template for configuration file which is created after 'service mysql init'
 cp -a %{SOURCE4} mysqld.conf
 cp -a %{SOURCE5} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/clusters.conf
@@ -618,19 +622,19 @@ touch $RPM_BUILD_ROOT/var/log/%{name}/{mysqld,query,slow}.log
 cp mysqld.conf mysqld.tmp
 awk 'BEGIN { RS="\n\n" } !/bdb/ { printf("%s\n\n", $0) }' < mysqld.tmp > mysqld.conf
 
-cp -a mysqld.conf $RPM_BUILD_ROOT%{_datadir}/%{_orgname}/mysqld.conf
+cp -a mysqld.conf $RPM_BUILD_ROOT%{_datadir}/%{name}/mysqld.conf
 cp -a %{SOURCE13} $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/mysql-client.conf
 ln -s mysql-client.conf $RPM_BUILD_ROOT%{_sysconfdir}/%{name}/my.cnf
 cp -a %{SOURCE14} $RPM_BUILD_ROOT/etc/skel/.my.cnf
 
 # NDB
 %if %{with ndb}
-install -p %{SOURCE7} $RPM_BUILD_ROOT/etc/rc.d/init.d/mysql-ndb
-cp -a %{SOURCE8} $RPM_BUILD_ROOT/etc/sysconfig/mysql-ndb
-install -p %{SOURCE9} $RPM_BUILD_ROOT/etc/rc.d/init.d/mysql-ndb-mgm
-cp -a %{SOURCE10} $RPM_BUILD_ROOT/etc/sysconfig/mysql-ndb-mgm
-install -p %{SOURCE11} $RPM_BUILD_ROOT/etc/rc.d/init.d/mysql-ndb-cpc
-cp -a %{SOURCE12} $RPM_BUILD_ROOT/etc/sysconfig/mysql-ndb-cpc
+install -p %{SOURCE7} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}-ndb
+cp -a %{SOURCE8} $RPM_BUILD_ROOT/etc/sysconfig/%{name}-ndb
+install -p %{SOURCE9} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}-ndb-mgm
+cp -a %{SOURCE10} $RPM_BUILD_ROOT/etc/sysconfig/%{name}-ndb-mgm
+install -p %{SOURCE11} $RPM_BUILD_ROOT/etc/rc.d/init.d/%{name}-ndb-cpc
+cp -a %{SOURCE12} $RPM_BUILD_ROOT/etc/sysconfig/%{name}-ndb-cpc
 %endif
 
 sed -i -e 's,/usr//usr,%{_prefix},g' $RPM_BUILD_ROOT%{_bindir}/mysql_config
@@ -638,7 +642,7 @@ sed -i -e '/libs/s/$ldflags//' $RPM_BUILD_ROOT%{_bindir}/mysql_config
 sed -i -e '/libs/s/-lprobes_mysql//' $RPM_BUILD_ROOT%{_bindir}/mysql_config
 
 # remove known unpackaged files
-%{__rm} -r $RPM_BUILD_ROOT%{_datadir}/%{_orgname}-support
+%{__rm} -r $RPM_BUILD_ROOT%{_datadir}/%{name}-support
 
 # rename not to be so generic name
 mv $RPM_BUILD_ROOT%{_bindir}/{,mysql_}resolve_stack_dump
@@ -651,9 +655,9 @@ mv $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir}}/mysqlaccess.conf
 %{!?debug:%{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_resolve_stack_dump}
 %{!?debug:%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql_resolve_stack_dump.1}
 # generate symbols file, so one can generate backtrace using it
-# mysql_resolve_stack_dump -s %{_datadir}/%{_orgname}/mysqld.sym -n mysqld.stack.
+# mysql_resolve_stack_dump -s %{_datadir}/%{name}/mysqld.sym -n mysqld.stack.
 # http://dev.mysql.com/doc/refman/5.0/en/using-stack-trace.html
-%{?debug:nm -n $RPM_BUILD_ROOT%{_sbindir}/mysqld > $RPM_BUILD_ROOT%{_datadir}/%{_orgname}/mysqld.sym}
+%{?debug:nm -n $RPM_BUILD_ROOT%{_sbindir}/mysqld > $RPM_BUILD_ROOT%{_datadir}/%{name}/mysqld.sym}
 
 # do not clobber users $PATH
 mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysql_plugin
@@ -672,10 +676,10 @@ mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysqlcheck
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysqld_safe
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysqld_multi
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysqld_{multi,safe}*
-#rm $RPM_BUILD_ROOT%{_datadir}/%{_orgname}/mysql-log-rotate
-#rm $RPM_BUILD_ROOT%{_datadir}/%{_orgname}/mysql.server
-#rm $RPM_BUILD_ROOT%{_datadir}/%{_orgname}/binary-configure
-%{__rm} $RPM_BUILD_ROOT%{_datadir}/%{_orgname}/errmsg-utf8.txt
+#rm $RPM_BUILD_ROOT%{_datadir}/%{name}/mysql-log-rotate
+#rm $RPM_BUILD_ROOT%{_datadir}/%{name}/mysql.server
+#rm $RPM_BUILD_ROOT%{_datadir}/%{name}/binary-configure
+%{__rm} $RPM_BUILD_ROOT%{_datadir}/%{name}/errmsg-utf8.txt
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_waitpid
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql_waitpid.1*
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql.server*
@@ -704,7 +708,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %pre
 %groupadd -g 89 mysql
-%useradd -u 89 -d %{_mysqlhome} -s /bin/sh -g mysql -c "MySQL Server" mysql
+%useradd -u 89 -d %{_perconahome} -s /bin/sh -g mysql -c "Percona Server Server" mysql
 
 %post
 /sbin/ldconfig
@@ -756,142 +760,6 @@ fi
 
 %post   libs -p /sbin/ldconfig
 %postun libs -p /sbin/ldconfig
-
-%triggerpostun -- mysql < 4.0.20-2.4
-# For clusters in /etc/%{name}/clusters.conf
-if [ -f /etc/sysconfig/mysql ]; then
-	. /etc/sysconfig/mysql
-	if [ -n "$MYSQL_DB_CLUSTERS" ]; then
-		for i in "$MYSQL_DB_CLUSTERS"; do
-			echo "$i/mysqld.conf=$i" >> /etc/%{name}/clusters.conf
-		done
-		echo "# Do not use **obsolete** option MYSQL_DB_CLUSTERS" >> /etc/sysconfig/mysql
-		echo "# USE /etc/%{name}/clusters.conf instead" >> /etc/sysconfig/mysql
-		echo "Converted clusters from MYSQL_DB_CLUSTERS to /etc/%{name}/clusters.conf."
-		echo "You NEED to fix your /etc/sysconfig/mysql and verify /etc/%{name}/clusters.conf."
-	fi
-fi
-
-%triggerpostun -- mysql < 4.1.1
-# For better compatibility with prevoius versions:
-for config in $(awk -F= '!/^#/ && /=/{print $1}' /etc/%{name}/clusters.conf); do
-	if echo "$config" | grep -q '^/'; then
-		config_file="$config"
-	elif [ -f "/etc/%{name}/$config" ]; then
-		config_file=/etc/%{name}/$config
-	else
-		clusterdir=$(awk -F= "/^$config/{print \$2}" /etc/%{name}/clusters.conf)
-		if [ -z "$clusterdir" ]; then
-			echo >&2 "Can't find cluster dir for $config!"
-			echo >&2 "Please remove extra (leading) spaces from /etc/%{name}/clusters.conf"
-			exit 1
-		fi
-		config_file="$clusterdir/mysqld.conf"
-	fi
-
-	if [ ! -f "$config_file" ]; then
-			echo >&2 "Lost myself! Please report this (with above errors, if any) to http://bugs.pld-linux.org/"
-			exit 1
-	fi
-	echo "Adding option old-passwords to config: $config_file"
-	echo "If you want to use new, better passwords - remove it"
-
-	# sed magic to add 'old-passwords' to [mysqld] section
-	sed -i -e '/./{H;$!d;};x;/\[mysqld\]/{
-		a
-		a; Compatibility options:
-		aold-passwords
-	}
-	' $config_file
-done
-
-%banner -e %{name}-4.1.x <<-EOF
-	If you want to use new help tables in MySQL 4.1.x then You'll need to import the help data:
-	mysql -u mysql mysql < %{_datadir}/%{_orgname}/fill_help_tables.sql
-EOF
-#'
-
-%triggerpostun -- mysql < 5.1.0
-configs=""
-for config in $(awk -F= '!/^#/ && /=/{print $1}' /etc/%{name}/clusters.conf); do
-	if echo "$config" | grep -q '^/'; then
-		config_file="$config"
-	elif [ -f "/etc/%{name}/$config" ]; then
-		config_file=/etc/%{name}/$config
-	else
-		clusterdir=$(awk -F= "/^$config/{print \$2}" /etc/%{name}/clusters.conf)
-		if [ -z "$clusterdir" ]; then
-			echo >&2 "Can't find cluster dir for $config!"
-			echo >&2 "Please remove extra (leading) spaces from /etc/%{name}/clusters.conf"
-			exit 1
-		fi
-		config_file="$clusterdir/mysqld.conf"
-	fi
-
-	if [ ! -f "$config_file" ]; then
-		echo >&2 "ERROR: Can't find real config file for $config! Please report this (with above errors, if any) to http://bugs.pld-linux.org/"
-		continue
-	fi
-	configs="$configs $config_file"
-done
-
-(
-echo 'You should run MySQL upgrade script *after* restarting MySQL server for all MySQL clusters.'
-echo 'Thus, you should invoke:'
-for config in $configs; do
-	sed -i -e '
-		s/set-variable\s*=\s* //
-		# use # as comment in config
-		s/^;/#/
-	' $config
-
-	datadir=$(awk -F= '!/^#/ && $1 ~ /datadir/{print $2}' $config | xargs)
-	echo "# mysql_upgrade --datadir=$datadir"
-done
-) | %banner -e %{name}-5.1
-
-%triggerpostun -- mysql < 5.5.0
-configs=""
-for config in $(awk -F= '!/^#/ && /=/{print $1}' /etc/%{name}/clusters.conf); do
-	if echo "$config" | grep -q '^/'; then
-		config_file="$config"
-	elif [ -f "/etc/%{name}/$config" ]; then
-		config_file=/etc/%{name}/$config
-	else
-		clusterdir=$(awk -F= "/^$config/{print \$2}" /etc/%{name}/clusters.conf)
-		if [ -z "$clusterdir" ]; then
-			echo >&2 "Can't find cluster dir for $config!"
-			echo >&2 "Please remove extra (leading) spaces from /etc/%{name}/clusters.conf"
-			exit 1
-		fi
-		config_file="$clusterdir/mysqld.conf"
-	fi
-
-	if [ ! -f "$config_file" ]; then
-		echo >&2 "ERROR: Can't find real config file for $config! Please report this (with above errors, if any) to http://bugs.pld-linux.org/"
-		continue
-	fi
-	configs="$configs $config_file"
-done
-
-(
-echo 'You should run MySQL upgrade script *after* restarting MySQL server for all MySQL clusters.'
-echo 'Thus, you should invoke:'
-for config in $configs; do
-	sed -i -e '
-		s/^language *= *polish/lc-messages = pl_PL/i
-		s/set-variable\s*=\s* //
-		s/^skip-locking/skip-external-locking/
-		# this is not valid for server. it is client option
-		s/^default-character-set/# client-config: &/
-		# use # as comment in config
-		s/^;/#/
-	' $config
-
-	socket=$(awk -F= '!/^#/ && $1 ~ /socket/{print $2}' $config | xargs)
-	echo "# mysql_upgrade ${socket:+--socket=$socket}"
-done
-) | %banner -e %{name}-5.5
 
 %files
 %defattr(644,root,root,755)
@@ -956,57 +824,57 @@ done
 
 %if %{?debug:1}0
 %attr(755,root,root) %{_bindir}/*resolve_stack_dump
-%{_datadir}/%{_orgname}/mysqld.sym
+%{_datadir}/%{name}/mysqld.sym
 %{_mandir}/man1/*resolve_stack_dump.1*
 %endif
 
-%attr(700,mysql,mysql) %{_mysqlhome}
+%attr(700,mysql,mysql) %{_perconahome}
 # root:root is proper here for mysql.rpm while mysql:mysql is potential security hole
-%attr(751,root,root) /var/lib/mysql
-%attr(750,mysql,mysql) %dir /var/log/mysql
-%attr(750,mysql,mysql) %dir /var/log/archive/mysql
-%attr(640,mysql,mysql) %ghost /var/log/mysql/*
+%attr(751,root,root) /var/lib/%{name}
+%attr(750,mysql,mysql) %dir /var/log/%{name}
+%attr(750,mysql,mysql) %dir /var/log/archive/%{name}
+%attr(640,mysql,mysql) %ghost /var/log/%{name}/*
 
 # This is template for configuration file which is created after 'service mysql init'
-%{_datadir}/%{_orgname}/mysqld.conf
-%{_datadir}/%{_orgname}/mysql_security_commands.sql
-%{_datadir}/%{_orgname}/mysql_system_tables_data.sql
-%{_datadir}/%{_orgname}/mysql_system_tables.sql
-%{_datadir}/%{_orgname}/mysql_test_data_timezone.sql
+%{_datadir}/%{name}/mysqld.conf
+%{_datadir}/%{name}/mysql_security_commands.sql
+%{_datadir}/%{name}/mysql_system_tables_data.sql
+%{_datadir}/%{name}/mysql_system_tables.sql
+%{_datadir}/%{name}/mysql_test_data_timezone.sql
 
-%{_datadir}/%{_orgname}/english
-%{_datadir}/%{_orgname}/dictionary.txt
-%{_datadir}/%{_orgname}/fill_help_tables.sql
-%{_datadir}/%{_orgname}/innodb_memcached_config.sql
-#%{_datadir}/%{_orgname}/mysql_fix_privilege_tables.sql
-%lang(bg) %{_datadir}/%{_orgname}/bulgarian
-%lang(cs) %{_datadir}/%{_orgname}/czech
-%lang(da) %{_datadir}/%{_orgname}/danish
-%lang(de) %{_datadir}/%{_orgname}/german
-%lang(el) %{_datadir}/%{_orgname}/greek
-%lang(es) %{_datadir}/%{_orgname}/spanish
-%lang(et) %{_datadir}/%{_orgname}/estonian
-%lang(fr) %{_datadir}/%{_orgname}/french
-%lang(hu) %{_datadir}/%{_orgname}/hungarian
-%lang(it) %{_datadir}/%{_orgname}/italian
-%lang(ja) %{_datadir}/%{_orgname}/japanese
-%lang(ko) %{_datadir}/%{_orgname}/korean
-%lang(nl) %{_datadir}/%{_orgname}/dutch
-%lang(nb) %{_datadir}/%{_orgname}/norwegian
-%lang(nn) %{_datadir}/%{_orgname}/norwegian-ny
-%lang(pl) %{_datadir}/%{_orgname}/polish
-%lang(pt) %{_datadir}/%{_orgname}/portuguese
-%lang(ro) %{_datadir}/%{_orgname}/romanian
-%lang(ru) %{_datadir}/%{_orgname}/russian
-%lang(sr) %{_datadir}/%{_orgname}/serbian
-%lang(sk) %{_datadir}/%{_orgname}/slovak
-%lang(sv) %{_datadir}/%{_orgname}/swedish
-%lang(uk) %{_datadir}/%{_orgname}/ukrainian
+%{_datadir}/%{name}/english
+%{_datadir}/%{name}/dictionary.txt
+%{_datadir}/%{name}/fill_help_tables.sql
+%{_datadir}/%{name}/innodb_memcached_config.sql
+#%{_datadir}/%{name}/mysql_fix_privilege_tables.sql
+%lang(bg) %{_datadir}/%{name}/bulgarian
+%lang(cs) %{_datadir}/%{name}/czech
+%lang(da) %{_datadir}/%{name}/danish
+%lang(de) %{_datadir}/%{name}/german
+%lang(el) %{_datadir}/%{name}/greek
+%lang(es) %{_datadir}/%{name}/spanish
+%lang(et) %{_datadir}/%{name}/estonian
+%lang(fr) %{_datadir}/%{name}/french
+%lang(hu) %{_datadir}/%{name}/hungarian
+%lang(it) %{_datadir}/%{name}/italian
+%lang(ja) %{_datadir}/%{name}/japanese
+%lang(ko) %{_datadir}/%{name}/korean
+%lang(nl) %{_datadir}/%{name}/dutch
+%lang(nb) %{_datadir}/%{name}/norwegian
+%lang(nn) %{_datadir}/%{name}/norwegian-ny
+%lang(pl) %{_datadir}/%{name}/polish
+%lang(pt) %{_datadir}/%{name}/portuguese
+%lang(ro) %{_datadir}/%{name}/romanian
+%lang(ru) %{_datadir}/%{name}/russian
+%lang(sr) %{_datadir}/%{name}/serbian
+%lang(sk) %{_datadir}/%{name}/slovak
+%lang(sv) %{_datadir}/%{name}/swedish
+%lang(uk) %{_datadir}/%{name}/ukrainian
 
 %files charsets
 %defattr(644,root,root,755)
-%dir %{_datadir}/%{_orgname}
-%{_datadir}/%{_orgname}/charsets
+%dir %{_datadir}/%{name}
+%{_datadir}/%{name}/charsets
 
 %files extras
 %defattr(644,root,root,755)
@@ -1027,7 +895,7 @@ done
 %{_mandir}/man1/replace.1*
 %{_mandir}/man1/resolveip.1*
 
-%files -n mysqlhotcopy
+%files mysqlhotcopy
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/mysqlhotcopy
 %{_mandir}/man1/mysqlhotcopy.1*
@@ -1072,13 +940,13 @@ done
 
 %files libs
 %defattr(644,root,root,755)
-%attr(751,root,root) %dir %{_sysconfdir}/mysql
+%attr(751,root,root) %dir %{_sysconfdir}/%{name}
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}/mysql-client.conf
 %{_sysconfdir}/%{name}/my.cnf
-%attr(755,root,root) %{_libdir}/libmysqlclient.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libmysqlclient.so.18
-%attr(755,root,root) %{_libdir}/libmysqlclient_r.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libmysqlclient_r.so.18
+%attr(755,root,root) %{_libdir}/libperconaserverclient.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libperconaserverclient.so.18
+%attr(755,root,root) %{_libdir}/libperconaserverclient_r.so.*.*.*
+%attr(755,root,root) %ghost %{_libdir}/libperconaserverclient_r.so.18
 %if %{with ndb}
 %attr(755,root,root) %{_libdir}/libndbclient.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libndbclient.so.3
@@ -1087,8 +955,8 @@ done
 %files devel
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/mysql_config
-%attr(755,root,root) %{_libdir}/libmysqlclient.so
-%attr(755,root,root) %{_libdir}/libmysqlclient_r.so
+%attr(755,root,root) %{_libdir}/libperconaserverclient.so
+%attr(755,root,root) %{_libdir}/libperconaserverclient_r.so
 %if %{with ndb}
 %attr(755,root,root) %{_libdir}/libndbclient.so
 %endif
@@ -1100,8 +968,8 @@ done
 
 %files static
 %defattr(644,root,root,755)
-%{_libdir}/libmysqlclient.a
-%{_libdir}/libmysqlclient_r.a
+%{_libdir}/libperconaserverclient.a
+%{_libdir}/libperconaserverclient_r.a
 %if %{with ndb}
 %{_libdir}/libndbclient.a
 %endif
@@ -1125,8 +993,8 @@ done
 %files ndb
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_sbindir}/ndbd
-%attr(754,root,root) /etc/rc.d/init.d/mysql-ndb
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/mysql-ndb
+%attr(754,root,root) /etc/rc.d/init.d/%{name}-ndb
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}-ndb
 %{_mandir}/man1/ndbd_redo_log_reader.1*
 %{_mandir}/man8/ndbd.8*
 
@@ -1169,14 +1037,14 @@ done
 %files ndb-mgm
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_sbindir}/ndb_mgmd
-%attr(754,root,root) /etc/rc.d/init.d/mysql-ndb-mgm
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/mysql-ndb-mgm
+%attr(754,root,root) /etc/rc.d/init.d/%{name}-ndb-mgm
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}-ndb-mgm
 %{_mandir}/man8/ndb_mgmd.8*
 
 %files ndb-cpc
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_sbindir}/ndb_cpcd
 %attr(754,root,root) /etc/rc.d/init.d/mysql-ndb-cpc
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/mysql-ndb-cpc
+%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}-ndb-cpc
 %{_mandir}/man1/ndb_cpcd.1*
 %endif
