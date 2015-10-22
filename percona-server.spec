@@ -708,7 +708,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %pre
 %groupadd -g 89 mysql
-%useradd -u 89 -d %{_perconahome} -s /bin/sh -g mysql -c "Percona Server Server" mysql
+%useradd -u 89 -d %{_perconahome} -s /bin/sh -g mysql -c "Percona Server" mysql
 
 %post
 /sbin/ldconfig
