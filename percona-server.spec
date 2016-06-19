@@ -64,8 +64,6 @@ Source13:	%{name}-client.conf
 Source14:	my.cnf
 Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
-Patch2:		mysqlhotcopy-5.0-5.5.patch
-Patch3:		bug-67402.patch
 Patch4:		mysql-no-default-secure-auth.patch
 Patch5:		mysql-system-libhsclient.patch
 # from fedora
@@ -74,14 +72,11 @@ Patch6:		mysql-system-users.patch
 Patch9:		mysql-build.patch
 Patch11:	mysql-upgrade.patch
 Patch12:	mysql-config.patch
-Patch14:	mysql-bug-43594.patch
 Patch18:	mysql-sphinx.patch
 Patch19:	mysql-chain-certs.patch
 # from fedora
 Patch20:	mysql-dubious-exports.patch
 
-Patch22:	bug-66589.patch
-Patch23:	bug-44278.patch
 Patch24:	mysql-cmake.patch
 
 Patch26:	mysqldumpslow-clusters.patch
@@ -256,32 +251,6 @@ and server.
 Ten pakiet zawiera definicje kodowań znaków potrzebne dla serwera i
 klienta.
 
-%package mysqlhotcopy
-Summary:	mysqlhotcopy - A Percona Server database backup program
-Summary(pl.UTF-8):	mysqlhotcopy - program do tworzenia kopii zapasowych baz Percona Server
-Group:		Applications/Databases
-Requires:	perl-DBD-mysql
-
-%description mysqlhotcopy
-mysqlhotcopy uses LOCK TABLES, FLUSH TABLES, and cp or scp to make a
-database backup quickly. It is the fastest way to make a backup of the
-database or single tables, but it can be run only on the same machine
-where the database directories are located. mysqlhotcopy works only
-for backing up MyISAM and ARCHIVE tables.
-
-See innobackup package to backup InnoDB tables.
-
-%description mysqlhotcopy -l pl.UTF-8
-mysqlhotcopy wykorzystuje LOCK TABLES, FLUSH TABLES oraz cp i scp do
-szybkiego tworzenia kopii zapasowych baz danych. Jest to najszybszy
-sposób wykonania kopii zapasowej bazy danych lub pojedynczych tabel,
-ale może działać tylko na maszynie, na której znajdują się katalogi z
-bazą danych. mysqlhotcopy działa tylko dla tabel typu MyISAM i
-ARCHIVE.
-
-Narzędzie do tworzenia kopii tabel InnoDB znajduje się w pakiecie
-innobackup.
-
 %package extras
 Summary:	Percona Server additional utilities
 Summary(pl.UTF-8):	Dodatkowe narzędzia do Percona Server
@@ -302,8 +271,6 @@ Summary:	Percona Server additional utilities written in Perl
 Summary(pl.UTF-8):	Dodatkowe narzędzia do Percona Server napisane w Perlu
 Group:		Applications/Databases
 Requires:	%{name}-extras = %{version}-%{release}
-# this is just for the sake of smooth upgrade, not to break systems
-Requires:	mysqlhotcopy = %{version}-%{release}
 Requires:	perl-DBD-mysql
 
 %description extras-perl
@@ -522,8 +489,6 @@ mv sphinx-*/mysqlse storage/sphinx
 %patch18 -p1
 %endif
 %patch1 -p1
-%patch2 -p1
-%patch3 -p1
 %patch4 -p1
 %patch5 -p1
 %patch6 -p1
@@ -531,12 +496,9 @@ mv sphinx-*/mysqlse storage/sphinx
 %patch9 -p1
 %patch11 -p1
 %patch12 -p1
-%patch14 -p0
 %patch19 -p1
 %patch20 -p1
 
-%patch22 -p1
-%patch23 -p1
 %patch24 -p1
 
 %patch26 -p1
@@ -907,11 +869,6 @@ fi
 %{_mandir}/man1/perror.1*
 %{_mandir}/man1/replace.1*
 %{_mandir}/man1/resolveip.1*
-
-%files mysqlhotcopy
-%defattr(644,root,root,755)
-%attr(755,root,root) %{_bindir}/mysqlhotcopy
-%{_mandir}/man1/mysqlhotcopy.1*
 
 %files extras-perl
 %defattr(644,root,root,755)
