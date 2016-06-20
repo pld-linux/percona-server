@@ -94,6 +94,7 @@ BuildRequires:	libstdc++4-devel >= 5:4.0
 BuildRequires:	libstdc++-devel >= 5:4.0
 %endif
 BuildRequires:	automake
+BuildRequires:	boost-devel = 1.59.0
 BuildRequires:	libhsclient-devel
 %{?with_tcpd:BuildRequires:	libwrap-devel}
 BuildRequires:	ncurses-devel >= 4.2
