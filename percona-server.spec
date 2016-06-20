@@ -20,7 +20,7 @@
 %bcond_without	federated	# Federated storage engine support
 %bcond_without	raid		# RAID support
 %bcond_without	ssl		# OpenSSL support
-%bcond_without	systemtap	# systemtap/dtrace probes
+%bcond_with	systemtap	# systemtap/dtrace probes
 %bcond_without	tcpd		# libwrap (tcp_wrappers) support
 %bcond_without	sphinx		# Sphinx storage engine support
 %bcond_without	tokudb		# TokuDB
