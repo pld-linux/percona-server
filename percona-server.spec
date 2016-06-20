@@ -24,7 +24,7 @@
 %bcond_without	tcpd		# libwrap (tcp_wrappers) support
 %bcond_with	sphinx		# Sphinx storage engine support
 %bcond_without	tokudb		# TokuDB
-%bcond_without	system_boost	# Use system boost package
+%bcond_with	system_boost	# Use system boost package
 %bcond_with	tests		# FIXME: don't run correctly
 %bcond_with	ndb		# NDB is now a separate product, this here is broken, so disable it
 
@@ -517,7 +517,7 @@ mv sphinx-*/mysqlse storage/sphinx
 [ -f sql/sql_yacc.h ] && %{__rm} sql/sql_yacc.h
 
 # map has more sane versioning that default "global everything" in ver.in
-cp -p libmysql/libmysql.map libmysql/libmysql.ver.in
+#cp -p libmysql/libmysql.map libmysql/libmysql.ver.in
 
 %build
 install -d build
