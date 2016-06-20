@@ -9,6 +9,9 @@
 # - segfaults on select from non-mysql user (caused by builder environment):
 #     https://bugs.launchpad.net/pld-linux/+bug/381904
 #     (profiling disabled temporaily to workaround this)
+# NOTE:
+# - mysql 'root' user will be 'root' not 'mysql' with 5.7 package
+#   this is to make pld consistent what the rest of the world uses.
 #
 # Conditional build:
 %bcond_with	autodeps	# BR packages needed only for resolving deps
@@ -489,20 +492,23 @@ mv sphinx-*/mysqlse storage/sphinx
 %patch18 -p1
 %endif
 %patch1 -p1
-%patch4 -p1
-%patch5 -p1
-%patch6 -p1
+#%patch4 -p1 STILL NEEDED?
+#%patch5 -p1 HSCLIENT NOT PRESENT?!
+#%patch6 -p1 ADD mysql_sysadmin user, drop 'mysql' user, or rotate also with 'root' user?
 
-%patch9 -p1
-%patch11 -p1
-%patch12 -p1
+#%patch9 -p1 PERHAPS OUTDATED?
+#%patch11 -p1 mysql_upgrade command is missing (but man page still exists!)
+#%patch12 -p1 cflags filtering, still needed? (added in 2008: a236ba89)
 %patch19 -p1
 %patch20 -p1
 
 %patch24 -p1
 
-%patch26 -p1
-%patch27 -p1
+#"mysqldumpslow.sh" is not currently compatible with Percona extended slow query
+#log format. Please use "pt-query-digest" from Percona Toolkit instead
+#(https://www.percona.com/doc/percona-toolkit/2.2/pt-query-digest.html).
+#%patch26 -p1
+#%patch27 -p1 LIKELY OUTDATED
 
 # to get these files rebuild
 [ -f sql/sql_yacc.cc ] && %{__rm} sql/sql_yacc.cc

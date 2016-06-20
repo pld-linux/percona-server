@@ -1,3 +1,7 @@
+
+test user's dropping obsoleted by mysql_security_commands.sql
+
+
 --- mysql-5.5.8/scripts/mysql_system_tables_data.sql.org	2010-12-16 00:09:23.662631925 +0100
 +++ mysql-5.5.8/scripts/mysql_system_tables_data.sql	2010-12-16 00:10:17.763454969 +0100
 @@ -27,23 +27,17 @@
