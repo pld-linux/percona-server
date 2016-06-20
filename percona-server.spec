@@ -22,7 +22,7 @@
 %bcond_without	ssl		# OpenSSL support
 %bcond_with	systemtap	# systemtap/dtrace probes
 %bcond_without	tcpd		# libwrap (tcp_wrappers) support
-%bcond_without	sphinx		# Sphinx storage engine support
+%bcond_with	sphinx		# Sphinx storage engine support
 %bcond_without	tokudb		# TokuDB
 %bcond_without	system_boost	# Use system boost package
 %bcond_with	tests		# FIXME: don't run correctly
