@@ -628,7 +628,7 @@ mv $RPM_BUILD_ROOT%{_bindir}/{,mysql_}resolve_stack_dump
 mv $RPM_BUILD_ROOT%{_mandir}/man1/{,mysql_}resolve_stack_dump.1
 
 # move to _sysconfdir
-mv $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir}}/mysqlaccess.conf
+#mv $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir}}/mysqlaccess.conf
 
 # not useful without -debug build
 %{!?debug:%{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_resolve_stack_dump}
@@ -659,8 +659,8 @@ mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysqlcheck
 #rm $RPM_BUILD_ROOT%{_datadir}/%{name}/mysql.server
 #rm $RPM_BUILD_ROOT%{_datadir}/%{name}/binary-configure
 %{__rm} $RPM_BUILD_ROOT%{_datadir}/%{name}/errmsg-utf8.txt
-%{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_waitpid
-%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql_waitpid.1*
+#%{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_waitpid
+#%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql_waitpid.1*
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql.server*
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysqlman.1*
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/comp_err.1*
@@ -771,20 +771,25 @@ fi
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_archive.so
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_blackhole.so
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_federated.so
-%attr(755,root,root) %{_libdir}/%{name}/plugin/handlersocket.so
+#%attr(755,root,root) %{_libdir}/%{name}/plugin/handlersocket.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_file.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/libfnv1a_udf.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/libfnv_udf.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/libmurmur_udf.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/locking_service.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/mypluglib.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/mysql_no_login.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/mysqlx.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/qa_auth_client.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/qa_auth_interface.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/qa_auth_server.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/query_response_time.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/rewriter.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/scalability_metrics.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/semisync_master.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/semisync_slave.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/validate_password.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/version_token.so
 %if %{with sphinx}
 %attr(755,root,root) %{_libdir}/%{name}/plugin/ha_sphinx.so
 %endif
@@ -796,7 +801,7 @@ fi
 %attr(755,root,root) %{_libdir}/libHotBackup.so
 %endif
 # for plugins
-%attr(755,root,root) %{_libdir}/libmysqlservices.so
+#%attr(755,root,root) %{_libdir}/libmysqlservices.so
 %{_mandir}/man1/innochecksum.1*
 %{_mandir}/man1/my_print_defaults.1*
 %{_mandir}/man1/myisamchk.1*
@@ -823,10 +828,13 @@ fi
 
 # This is template for configuration file which is created after 'service mysql init'
 %{_datadir}/%{name}/mysqld.conf
+%{_datadir}/%{name}/install_rewriter.sql
 %{_datadir}/%{name}/mysql_security_commands.sql
-%{_datadir}/%{name}/mysql_system_tables_data.sql
+%{_datadir}/%{name}/mysql_sys_schema.sql
 %{_datadir}/%{name}/mysql_system_tables.sql
+%{_datadir}/%{name}/mysql_system_tables_data.sql
 %{_datadir}/%{name}/mysql_test_data_timezone.sql
+%{_datadir}/%{name}/uninstall_rewriter.sql
 
 %{_datadir}/%{name}/english
 %{_datadir}/%{name}/dictionary.txt
@@ -864,7 +872,7 @@ fi
 
 %files extras
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_bindir}/msql2mysql
+#%attr(755,root,root) %{_bindir}/msql2mysql
 %attr(755,root,root) %{_bindir}/myisam_ftdump
 %attr(755,root,root) %{_bindir}/mysql_install_db
 %attr(755,root,root) %{_bindir}/mysql_secure_installation
@@ -872,7 +880,7 @@ fi
 %attr(755,root,root) %{_bindir}/perror
 %attr(755,root,root) %{_bindir}/replace
 %attr(755,root,root) %{_bindir}/resolveip
-%{_mandir}/man1/msql2mysql.1*
+#%{_mandir}/man1/msql2mysql.1*
 %{_mandir}/man1/myisam_ftdump.1*
 %{_mandir}/man1/mysql_install_db.1*
 %{_mandir}/man1/mysql_secure_installation.1*
@@ -883,41 +891,49 @@ fi
 
 %files extras-perl
 %defattr(644,root,root,755)
-%attr(755,root,root) %{_bindir}/mysql_convert_table_format
-%attr(755,root,root) %{_bindir}/mysql_find_rows
-%attr(755,root,root) %{_bindir}/mysql_fix_extensions
-%attr(755,root,root) %{_bindir}/mysql_setpermission
-%attr(755,root,root) %{_bindir}/mysql_zap
-%attr(755,root,root) %{_bindir}/mysqlaccess
+#%attr(755,root,root) %{_bindir}/mysql_convert_table_format
+#%attr(755,root,root) %{_bindir}/mysql_find_rows
+#%attr(755,root,root) %{_bindir}/mysql_fix_extensions
+#%attr(755,root,root) %{_bindir}/mysql_setpermission
+#%attr(755,root,root) %{_bindir}/mysql_zap
+#%attr(755,root,root) %{_bindir}/mysqlaccess
 %attr(755,root,root) %{_bindir}/mysqldumpslow
-%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/mysqlaccess.conf
-%{_mandir}/man1/mysql_convert_table_format.1*
-%{_mandir}/man1/mysql_find_rows.1*
-%{_mandir}/man1/mysql_fix_extensions.1*
-%{_mandir}/man1/mysql_setpermission.1*
-%{_mandir}/man1/mysql_zap.1*
-%{_mandir}/man1/mysqlaccess.1*
+#%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/mysqlaccess.conf
+#%{_mandir}/man1/mysql_convert_table_format.1*
+#%{_mandir}/man1/mysql_find_rows.1*
+#%{_mandir}/man1/mysql_fix_extensions.1*
+#%{_mandir}/man1/mysql_setpermission.1*
+#%{_mandir}/man1/mysql_zap.1*
+#%{_mandir}/man1/mysqlaccess.1*
 %{_mandir}/man1/mysqldumpslow.1*
 
 %files client
 %defattr(644,root,root,755)
 %attr(600,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/skel/.my.cnf
+%attr(755,root,root) %{_bindir}/lz4_decompress
 %attr(755,root,root) %{_bindir}/mysql
+%attr(755,root,root) %{_bindir}/mysql_config_editor
+%attr(755,root,root) %{_bindir}/mysql_ssl_rsa_setup
 %attr(755,root,root) %{_bindir}/mysqladmin
 %attr(755,root,root) %{_bindir}/mysqlbinlog
-%attr(755,root,root) %{_bindir}/mysqlbug
-%attr(755,root,root) %{_bindir}/mysql_config_editor
+#%attr(755,root,root) %{_bindir}/mysqlbug
 %attr(755,root,root) %{_bindir}/mysqldump
 %attr(755,root,root) %{_bindir}/mysqlimport
+%attr(755,root,root) %{_bindir}/mysqlpump
 %attr(755,root,root) %{_bindir}/mysqlshow
+%attr(755,root,root) %{_bindir}/zlib_decompress
+%{_mandir}/man1/lz4_decompress.1*
 %{_mandir}/man1/mysql.1*
+%{_mandir}/man1/mysql_config_editor.1*
+%{_mandir}/man1/mysql_ssl_rsa_setup.1*
 %{_mandir}/man1/mysqladmin.1*
 %{_mandir}/man1/mysqlbinlog.1*
-%{_mandir}/man1/mysqlbug.1*
-%{_mandir}/man1/mysql_config_editor.1*
+#%{_mandir}/man1/mysqlbug.1*
 %{_mandir}/man1/mysqldump.1*
 %{_mandir}/man1/mysqlimport.1*
+%{_mandir}/man1/mysqlpump.1*
 %{_mandir}/man1/mysqlshow.1*
+%{_mandir}/man1/zlib_decompress.1*
 
 %files libs
 %defattr(644,root,root,755)
@@ -925,9 +941,9 @@ fi
 %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}/mysql-client.conf
 %{_sysconfdir}/%{name}/my.cnf
 %attr(755,root,root) %{_libdir}/libperconaserverclient.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libperconaserverclient.so.18
-%attr(755,root,root) %{_libdir}/libperconaserverclient_r.so.*.*.*
-%attr(755,root,root) %ghost %{_libdir}/libperconaserverclient_r.so.18
+%attr(755,root,root) %ghost %{_libdir}/libperconaserverclient.so.20
+#%attr(755,root,root) %{_libdir}/libperconaserverclient_r.so.*.*.*
+#%attr(755,root,root) %ghost %{_libdir}/libperconaserverclient_r.so.18
 %if %{with ndb}
 %attr(755,root,root) %{_libdir}/libndbclient.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libndbclient.so.3
@@ -937,12 +953,14 @@ fi
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/mysql_config
 %attr(755,root,root) %{_libdir}/libperconaserverclient.so
-%attr(755,root,root) %{_libdir}/libperconaserverclient_r.so
+#%attr(755,root,root) %{_libdir}/libperconaserverclient_r.so
+%{_pkgconfigdir}/perconaserverclient.pc
 %if %{with ndb}
 %attr(755,root,root) %{_libdir}/libndbclient.so
 %endif
 # static-only so far
 %{_libdir}/libmysqld.a
+%{_libdir}/libmysqlservices.a
 %{_includedir}/mysql
 %{_aclocaldir}/mysql.m4
 %{_mandir}/man1/mysql_config.1*
@@ -950,7 +968,7 @@ fi
 %files static
 %defattr(644,root,root,755)
 %{_libdir}/libperconaserverclient.a
-%{_libdir}/libperconaserverclient_r.a
+#%{_libdir}/libperconaserverclient_r.a
 %if %{with ndb}
 %{_libdir}/libndbclient.a
 %endif
@@ -959,9 +977,9 @@ fi
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/mysqlslap
 %attr(755,root,root) %{_bindir}/mysqltest
-%dir %{_datadir}/sql-bench
-%{_datadir}/sql-bench/[CDRl]*
-%attr(755,root,root) %{_datadir}/sql-bench/[bcgirst]*
+#%dir %{_datadir}/sql-bench
+#%{_datadir}/sql-bench/[CDRl]*
+#%attr(755,root,root) %{_datadir}/sql-bench/[bcgirst]*
 %{_mandir}/man1/mysqlslap.1*
 %{_mandir}/man1/mysqltest.1*
 %{_mandir}/man1/mysqltest_embedded.1*
