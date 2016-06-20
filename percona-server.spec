@@ -24,6 +24,7 @@
 %bcond_without	tcpd		# libwrap (tcp_wrappers) support
 %bcond_without	sphinx		# Sphinx storage engine support
 %bcond_without	tokudb		# TokuDB
+%bcond_without	system_boost	# Use system boost package
 %bcond_with	tests		# FIXME: don't run correctly
 %bcond_with	ndb		# NDB is now a separate product, this here is broken, so disable it
 
@@ -94,7 +95,7 @@ BuildRequires:	libstdc++4-devel >= 5:4.0
 BuildRequires:	libstdc++-devel >= 5:4.0
 %endif
 BuildRequires:	automake
-BuildRequires:	boost-devel = 1.59.0
+%{?with_system_boost:BuildRequires:	boost-devel = 1.59.0}
 BuildRequires:	libhsclient-devel
 %{?with_tcpd:BuildRequires:	libwrap-devel}
 BuildRequires:	ncurses-devel >= 4.2
@@ -562,6 +563,9 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DWITH_SSL=%{?with_ssl:system}%{!?with_ssl:no} \
 %endif
 	-DWITH_UNIT_TESTS=%{?with_tests:ON}%{!?with_tests:OFF} \
+%if %{without system_boost}
+	-DDOWNLOAD_BOOST=1 -DWITH_BOOST=$(pwd)/boost \
+%endif
 	-DWITH_ZLIB=system \
 	-DWITH_READLINE=system
 
