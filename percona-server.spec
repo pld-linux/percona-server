@@ -9,6 +9,39 @@
 # - segfaults on select from non-mysql user (caused by builder environment):
 #     https://bugs.launchpad.net/pld-linux/+bug/381904
 #     (profiling disabled temporaily to workaround this)
+# - unpackaged files:
+#        /usr/COPYING.AGPLv3
+#        /usr/COPYING.GPLv2
+#        /usr/PATENTS
+#        /usr/README.md
+#        /usr/bin/mysqlxtest
+#        /usr/include/backup.h
+#        /usr/lib64/percona-server/plugin/keyring_udf.so
+#        /usr/lib64/percona-server/plugin/libtest_framework.so
+#        /usr/lib64/percona-server/plugin/libtest_services.so
+#        /usr/lib64/percona-server/plugin/libtest_services_threaded.so
+#        /usr/lib64/percona-server/plugin/libtest_session_detach.so
+#        /usr/lib64/percona-server/plugin/libtest_session_in_thd.so
+#        /usr/lib64/percona-server/plugin/libtest_session_info.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_2_sessions.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_all_col_types.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_cmds_1.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_commit.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_complex.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_errors.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_lock.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_processlist.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_replication.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_shutdown.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_sqlmode.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_stored_procedures_functions.so
+#        /usr/lib64/percona-server/plugin/libtest_sql_views_triggers.so
+#        /usr/lib64/percona-server/plugin/libtest_x_sessions_deinit.so
+#        /usr/lib64/percona-server/plugin/libtest_x_sessions_init.so
+#        /usr/lib64/percona-server/plugin/replication_observers_example_plugin.so
+#        /usr/lib64/percona-server/plugin/rewrite_example.so
+#        /usr/lib64/percona-server/plugin/test_security_context.so
+#        /usr/lib64/percona-server/plugin/test_udf_services.so
 # NOTE:
 # - mysql 'root' user will be 'root' not 'mysql' with 5.7 package
 #   this is to make pld consistent what the rest of the world uses.
@@ -34,7 +67,7 @@
 %endif
 
 %define		rel	0.1
-%define		percona_rel	8
+%define		percona_rel	10
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -45,12 +78,12 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.14
+Version:	5.7.16
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	83cff756f13cb04409a91165855a2e0e
+# Source0-md5:	9ac2b8e800dd40bb042493f4a859db67
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.10-release.tar.gz
 # Source100-md5:	dda52b24d8348fc09e26d8a649a231d2
 Source1:	%{name}.init
@@ -785,7 +818,7 @@ fi
 %attr(755,root,root) %{_libdir}/%{name}/plugin/qa_auth_server.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/query_response_time.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/rewriter.so
-%attr(755,root,root) %{_libdir}/%{name}/plugin/scalability_metrics.so
+#%attr(755,root,root) %{_libdir}/%{name}/plugin/scalability_metrics.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/semisync_master.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/semisync_slave.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/validate_password.so
