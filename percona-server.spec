@@ -67,7 +67,7 @@
 %endif
 
 %define		rel	0.1
-%define		percona_rel	10
+%define		percona_rel	16
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -78,14 +78,14 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.16
+Version:	5.7.18
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	9ac2b8e800dd40bb042493f4a859db67
-Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.10-release.tar.gz
-# Source100-md5:	dda52b24d8348fc09e26d8a649a231d2
+# Source0-md5:	01a79e52b352f771ce2025b549b98d6a
+Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
+# Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
@@ -582,6 +582,7 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DINSTALL_SQLBENCHDIR=%{_datadir} \
 	-DINSTALL_SUPPORTFILESDIR=share/%{name}-support \
 	-DINSTALL_MYSQLSHAREDIR=share/%{name} \
+	-DINSTALL_SECURE_FILE_PRIVDIR="" \
 	-DMYSQL_UNIX_ADDR=/var/lib/%{name}/%{name}.sock \
 	%{?debug:-DWITH_DEBUG=ON} \
 	-DWITHOUT_EXAMPLE_STORAGE_ENGINE=1 \
@@ -590,6 +591,7 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DWITH_PAM=ON \
 	-DWITH_PERFSCHEMA_STORAGE_ENGINE=1 \
 	-DWITH_PIC=ON \
+	-DWITH_SCALABILITY_METRICS=ON \
 %if "%{pld_release}" == "ac"
 	-DWITH_SSL=%{?with_ssl:bundled}%{!?with_ssl:no} \
 %else
@@ -775,11 +777,12 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc build/support-files/*.cnf
+%doc build-ps/rpm/*.cnf
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/logrotate.d/%{name}
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}
 %attr(640,root,mysql) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}/clusters.conf
+%attr(755,root,root) %{_bindir}/ps_mysqld_helper
 %attr(755,root,root) %{_bindir}/ps_tokudb_admin
 %attr(755,root,root) %{_sbindir}/innochecksum
 %attr(755,root,root) %{_sbindir}/my_print_defaults
@@ -795,20 +798,44 @@ fi
 %dir %{_libdir}/%{name}/plugin
 %attr(755,root,root) %{_libdir}/%{name}/plugin/adt_null.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/audit_log.so
-%attr(755,root,root) %{_libdir}/%{name}/plugin/auth.so
-%attr(755,root,root) %{_libdir}/%{name}/plugin/auth_pam.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/auth_pam_compat.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/auth_pam.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/auth.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/auth_socket.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/auth_test_plugin.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/connection_control.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/dialog.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/group_replication.so
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_archive.so
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_blackhole.so
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_federated.so
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/handlersocket.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_file.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_udf.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/libfnv1a_udf.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/libfnv_udf.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/libmurmur_udf.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_framework.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_services.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_services_threaded.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_session_detach.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_session_info.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_session_in_thd.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_2_sessions.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_all_col_types.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_cmds_1.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_commit.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_complex.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_errors.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_lock.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_processlist.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_replication.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_shutdown.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_sqlmode.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_stored_procedures_functions.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_sql_views_triggers.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_x_sessions_deinit.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libtest_x_sessions_init.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/locking_service.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/mypluglib.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/mysql_no_login.so
@@ -817,10 +844,14 @@ fi
 %attr(755,root,root) %{_libdir}/%{name}/plugin/qa_auth_interface.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/qa_auth_server.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/query_response_time.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/replication_observers_example_plugin.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/rewrite_example.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/rewriter.so
-#%attr(755,root,root) %{_libdir}/%{name}/plugin/scalability_metrics.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/scalability_metrics.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/semisync_master.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/semisync_slave.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/test_security_context.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/test_udf_services.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/validate_password.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/version_token.so
 %if %{with sphinx}
@@ -993,6 +1024,7 @@ fi
 %if %{with ndb}
 %attr(755,root,root) %{_libdir}/libndbclient.so
 %endif
+#%{_includedir}/backup.h
 # static-only so far
 %{_libdir}/libmysqld.a
 %{_libdir}/libmysqlservices.a

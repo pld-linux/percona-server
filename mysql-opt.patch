@@ -38,14 +38,4 @@
    ENDIF()
  
    # Solaris flags
-@@ -108,8 +108,8 @@
-           SET(COMMON_C_FLAGS               "${COMMON_C_FLAGS} -xarch=sparc")
-           SET(COMMON_CXX_FLAGS             "${COMMON_CXX_FLAGS} -xarch=sparc")
- 	ENDIF()
--        SET(CMAKE_C_FLAGS_DEBUG            "${COMMON_C_FLAGS}")
--        SET(CMAKE_CXX_FLAGS_DEBUG          "${COMMON_CXX_FLAGS}")
-+        SET(CMAKE_C_FLAGS_DEBUG            "${CMAKE_C_FLAGS_DEBUG} ${COMMON_C_FLAGS}")
-+        SET(CMAKE_CXX_FLAGS_DEBUG          "${CMAKE_CXX_FLAGS_DEBUG} ${COMMON_CXX_FLAGS}")
-         SET(CMAKE_C_FLAGS_RELWITHDEBINFO   "-xO3 ${COMMON_C_FLAGS}")
-         SET(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-xO3 ${COMMON_CXX_FLAGS}")
-       ENDIF()
+
