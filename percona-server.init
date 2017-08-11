@@ -336,7 +336,7 @@ mysqlstop() {
 
 	# try graceful shutdown -- send shutdown command
 	# requires mysql_sysadmin user proper privs
-	/usr/bin/percona-serveradmin --defaults-file=$MYSQL_CONFIG ${MYSQL_SOCKET:+--socket=$MYSQL_SOCKET} shutdown >/dev/null 2>&1
+	/usr/bin/mysqladmin --defaults-file=$MYSQL_CONFIG ${MYSQL_SOCKET:+--socket=$MYSQL_SOCKET} shutdown >/dev/null 2>&1
 	mysqlstatus "$clusterdir" stop
 
 	if [ "$MYSQL_PID" != "unknown" ]; then
@@ -360,7 +360,7 @@ mysqlstop() {
 # report slave status
 # uses MYSQL_SOCKET - path to mysql socket
 slave_status() {
-	if [ ! -x /usr/bin/percona-server ]; then
+	if [ ! -x /usr/bin/mysql ]; then
 		echo >&2 "Slave status not available: 'mysql' program not installed."
 		return
 	fi
@@ -489,7 +489,7 @@ mysqlinit() {
 	ok=0
 	/usr/sbin/mysqld \
 		--defaults-file=$MYSQL_CLUSTER_DIR/mysqld.conf \
-		--initialize \
+		--initialize-insecure \
 		--user=mysql \
 		--skip-grant-tables \
 		--datadir=$MYSQL_DATA_DIR \
@@ -504,14 +504,15 @@ mysqlinit() {
 		cat << END_OF_MSG
 
 PLEASE REMEMBER TO SET A PASSWORD FOR THE percona-server USERS!
-This is done, after starting database, in the order shown,
+This is done, after starting database, in the order shown below,
 with:
 
-For 'mysql_sysadmin' (RELOAD and SHUTDOWN privileges):
-echo "update mysql.user set password=password('newpassword') where user='mysql_sysadmin'; FLUSH PRIVILEGES;" | mysql -u mysql -S $MYSQL_SOCKET
+Add 'mysql_sysadmin' user (RELOAD and SHUTDOWN privileges):
+echo "CREATE USER 'mysql_sysadmin'@'localhost' IDENTIFIED BY 'SOME_RANDOM_PASSWORD'; FLUSH PRIVILEGES;" | mysql --ssl-mode=DISABLED -u root -S $MYSQL_SOCKET
+echo "GRANT RELOAD, SHUTDOWN ON *.* TO 'mysql_sysadmin'@'localhost'; FLUSH PRIVILEGES;" | mysql --ssl-mode=DISABLED -u root -S $MYSQL_SOCKET
 
-For 'mysql' user (ALL privileges, DB admin):
-echo "update mysql.user set password=password('newpassword') where user='mysql'; FLUSH PRIVILEGES;" | mysql -u mysql -S $MYSQL_SOCKET
+Set password for root user (ALL privileges, DB admin):
+echo "ALTER USER 'root'@'localhost' IDENTIFIED BY 'newpassword'; FLUSH PRIVILEGES;" | mysql --ssl-mode=DISABLED -u root -S $MYSQL_SOCKET
 
 NOTE: mysql_sysadmin password should be placed to $MYSQL_CONFIG in
 mysqladmin section. See the manual for more instructions.
@@ -535,7 +536,7 @@ also try to start the mysqld daemon with:
 You can use the command line tool mysql to connect to the mysql
 database and look at the grant tables:
 
-shell> mysql -u mysql mysql
+shell> mysql -u root mysql
 mysql> show tables
 
 Try 'mysqld --help' if you have problems with paths. Setting on
