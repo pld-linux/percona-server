@@ -11,10 +11,10 @@
 #
 # You must do this for every active cluster defined in /etc/mysql/clusters.conf
 
-/var/log/mysql/query.log
-/var/log/mysql/mysqld.log
-/var/log/mysql/slow.log
-/var/log/mysql/update*
+/var/log/percona-server/query.log
+/var/log/percona-server/mysqld.log
+/var/log/percona-server/slow.log
+/var/log/percona-server/update*
 {
 	olddir /var/log/archive/mysql
 	notifempty

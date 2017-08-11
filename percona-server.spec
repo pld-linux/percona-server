@@ -16,32 +16,6 @@
 #        /usr/README.md
 #        /usr/bin/mysqlxtest
 #        /usr/include/backup.h
-#        /usr/lib64/percona-server/plugin/keyring_udf.so
-#        /usr/lib64/percona-server/plugin/libtest_framework.so
-#        /usr/lib64/percona-server/plugin/libtest_services.so
-#        /usr/lib64/percona-server/plugin/libtest_services_threaded.so
-#        /usr/lib64/percona-server/plugin/libtest_session_detach.so
-#        /usr/lib64/percona-server/plugin/libtest_session_in_thd.so
-#        /usr/lib64/percona-server/plugin/libtest_session_info.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_2_sessions.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_all_col_types.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_cmds_1.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_commit.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_complex.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_errors.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_lock.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_processlist.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_replication.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_shutdown.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_sqlmode.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_stored_procedures_functions.so
-#        /usr/lib64/percona-server/plugin/libtest_sql_views_triggers.so
-#        /usr/lib64/percona-server/plugin/libtest_x_sessions_deinit.so
-#        /usr/lib64/percona-server/plugin/libtest_x_sessions_init.so
-#        /usr/lib64/percona-server/plugin/replication_observers_example_plugin.so
-#        /usr/lib64/percona-server/plugin/rewrite_example.so
-#        /usr/lib64/percona-server/plugin/test_security_context.so
-#        /usr/lib64/percona-server/plugin/test_udf_services.so
 # NOTE:
 # - mysql 'root' user will be 'root' not 'mysql' with 5.7 package
 #   this is to make pld consistent what the rest of the world uses.
@@ -57,6 +31,7 @@
 %bcond_without	tcpd		# libwrap (tcp_wrappers) support
 %bcond_with	sphinx		# Sphinx storage engine support
 %bcond_without	tokudb		# TokuDB
+# mysql needs boost 1.59.0 and doesn't support newer/older boost versions
 %bcond_with	system_boost	# Use system boost package
 %bcond_with	tests		# FIXME: don't run correctly
 %bcond_with	ndb		# NDB is now a separate product, this here is broken, so disable it
@@ -66,7 +41,7 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	0.1
+%define		rel	0.4
 %define		percona_rel	16
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
@@ -86,6 +61,10 @@ Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarb
 # Source0-md5:	01a79e52b352f771ce2025b549b98d6a
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
+%if %{without system_boost}
+Source101:      http://downloads.sourceforge.net/boost/boost_1_59_0.tar.bz2
+# Source101-md5:        6aa9a5c6a4ca1016edd0ed1178e3cb87
+%endif
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	%{name}.logrotate
@@ -101,12 +80,9 @@ Source13:	%{name}-client.conf
 Source14:	my.cnf
 Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
-Patch4:		mysql-no-default-secure-auth.patch
-Patch5:		mysql-system-libhsclient.patch
-# from fedora
-Patch6:		mysql-system-users.patch
 
-Patch9:		mysql-build.patch
+Patch7:		lz4.patch
+
 Patch11:	mysql-upgrade.patch
 Patch12:	mysql-config.patch
 Patch18:	mysql-sphinx.patch
@@ -115,22 +91,16 @@ Patch19:	mysql-chain-certs.patch
 Patch20:	mysql-dubious-exports.patch
 
 Patch24:	mysql-cmake.patch
-
-Patch26:	mysqldumpslow-clusters.patch
-Patch27:	x32.patch
 URL:		https://www.percona.com/software/mysql-database/percona-server
 BuildRequires:	bison >= 1.875
-BuildRequires:	cmake >= 2.6
+BuildRequires:	cmake >= 2.8.2
 BuildRequires:	readline-devel >= 6.2
-%if "%{pld_release}" == "ac"
-BuildRequires:	libstdc++4-devel >= 5:4.0
-%else
 BuildRequires:	libstdc++-devel >= 5:4.0
-%endif
 BuildRequires:	automake
 %{?with_system_boost:BuildRequires:	boost-devel = 1.59.0}
 BuildRequires:	libhsclient-devel
 %{?with_tcpd:BuildRequires:	libwrap-devel}
+BuildRequires:	mecab-devel
 BuildRequires:	ncurses-devel >= 4.2
 %{?with_ssl:BuildRequires:	openssl-devel >= 0.9.7d}
 BuildRequires:	pam-devel
@@ -167,7 +137,7 @@ Conflicts:	logrotate < 3.8.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
 %define		_libexecdir	%{_sbindir}
-%define		_localstatedir	/var/lib/%{name}
+%define		_localstatedir	/var/lib/mysql
 %define		_perconahome	/home/services/%{name}
 
 %description
@@ -517,7 +487,7 @@ This package contains the standard Percona Server NDB CPC Daemon.
 Ten pakiet zawiera standardowego demona Percona Server NDB CPC.
 
 %prep
-%setup -q -n %{name}-%{version}-%{percona_rel} %{?with_sphinx:-a100}
+%setup -q -n %{name}-%{version}-%{percona_rel} %{?with_sphinx:-a100} %{!?with_system_boost:-a101}
 
 %patch0 -p1
 
@@ -527,23 +497,13 @@ mv sphinx-*/mysqlse storage/sphinx
 %patch18 -p1
 %endif
 %patch1 -p1
-#%patch4 -p1 STILL NEEDED?
-#%patch5 -p1 HSCLIENT NOT PRESENT?!
-#%patch6 -p1 ADD mysql_sysadmin user, drop 'mysql' user, or rotate also with 'root' user?
 
-#%patch9 -p1 PERHAPS OUTDATED?
-#%patch11 -p1 mysql_upgrade command is missing (but man page still exists!)
-#%patch12 -p1 cflags filtering, still needed? (added in 2008: a236ba89)
+%patch7 -p1
+
 %patch19 -p1
 %patch20 -p1
 
 %patch24 -p1
-
-#"mysqldumpslow.sh" is not currently compatible with Percona extended slow query
-#log format. Please use "pt-query-digest" from Percona Toolkit instead
-#(https://www.percona.com/doc/percona-toolkit/2.2/pt-query-digest.html).
-#%patch26 -p1
-#%patch27 -p1 LIKELY OUTDATED
 
 # to get these files rebuild
 [ -f sql/sql_yacc.cc ] && %{__rm} sql/sql_yacc.cc
@@ -558,13 +518,6 @@ cd build
 # NOTE that /var/lib/mysql/mysql.sock is symlink to real sock file
 # (it defaults to first cluster but user may change it to whatever
 # cluster it wants)
-
-%if "%{pld_release}" == "ac"
-# add suffix, but allow ccache, etc in ~/.rpmmacros
-%{expand:%%define	__cc	%(echo '%__cc' | sed -e 's,-gcc,-gcc4,')}
-%{expand:%%define	__cxx	%(echo '%__cxx' | sed -e 's,-g++,-g++4,')}
-%{expand:%%define	__cpp	%(echo '%__cpp' | sed -e 's,-gcc,-gcc4,')}
-%endif
 
 CPPFLAGS="%{rpmcppflags}" \
 %cmake .. \
@@ -583,7 +536,7 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DINSTALL_SUPPORTFILESDIR=share/%{name}-support \
 	-DINSTALL_MYSQLSHAREDIR=share/%{name} \
 	-DINSTALL_SECURE_FILE_PRIVDIR="" \
-	-DMYSQL_UNIX_ADDR=/var/lib/%{name}/%{name}.sock \
+	-DMYSQL_UNIX_ADDR=/var/lib/mysql/mysql.sock \
 	%{?debug:-DWITH_DEBUG=ON} \
 	-DWITHOUT_EXAMPLE_STORAGE_ENGINE=1 \
 	-DWITH_FAST_MUTEXES=ON \
@@ -592,17 +545,18 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DWITH_PERFSCHEMA_STORAGE_ENGINE=1 \
 	-DWITH_PIC=ON \
 	-DWITH_SCALABILITY_METRICS=ON \
-%if "%{pld_release}" == "ac"
-	-DWITH_SSL=%{?with_ssl:bundled}%{!?with_ssl:no} \
-%else
 	-DWITH_SSL=%{?with_ssl:system}%{!?with_ssl:no} \
-%endif
 	-DWITH_UNIT_TESTS=%{?with_tests:ON}%{!?with_tests:OFF} \
 %if %{without system_boost}
-	-DDOWNLOAD_BOOST=1 -DWITH_BOOST=$(pwd)/boost \
+	%{!?with_system_boost:-DWITH_BOOST="$(pwd)/$(ls -1d ../boost_*)"} \
 %endif
 	-DWITH_ZLIB=system \
-	-DWITH_READLINE=system
+	-DWITH_READLINE=system \
+	-DWITH_LZ4=system \
+	-DWITH_LIBEVENT=system \
+	-DWITH_PROTOBUF=system \
+	-DWITH_MECAB=system \
+	-DTMPDIR=/var/tmp
 
 %{__make}
 
@@ -726,13 +680,13 @@ rm -rf $RPM_BUILD_ROOT
 
 %post
 /sbin/ldconfig
-/sbin/chkconfig --add mysql
-%service mysql restart
+/sbin/chkconfig --add %{name}
+%service %{name} restart
 
 %preun
 if [ "$1" = "0" ]; then
-	%service -q mysql stop
-	/sbin/chkconfig --del mysql
+	%service -q %{name} stop
+	/sbin/chkconfig --del %{name}
 fi
 
 %postun
@@ -743,33 +697,33 @@ if [ "$1" = "0" ]; then
 fi
 
 %post ndb
-/sbin/chkconfig --add mysql-ndb
-%service mysql-ndb restart "mysql NDB engine"
+/sbin/chkconfig --add %{name}-ndb
+%service %{name}-ndb restart "%{name} NDB engine"
 
 %preun ndb
 if [ "$1" = "0" ]; then
-	%service mysql-ndb stop
-	/sbin/chkconfig --del mysql-ndb
+	%service %{name}-ndb stop
+	/sbin/chkconfig --del %{name}-ndb
 fi
 
 %post ndb-mgm
-/sbin/chkconfig --add mysql-ndb-mgm
-%service mysql-ndb-mgm restart "mysql NDB management node"
+/sbin/chkconfig --add %{name}-ndb-mgm
+%service %{name}-ndb-mgm restart "%{name} NDB management node"
 
 %preun ndb-mgm
 if [ "$1" = "0" ]; then
-	%service mysql-ndb-mgm stop
-	/sbin/chkconfig --del mysql-ndb-mgm
+	%service %{name}-ndb-mgm stop
+	/sbin/chkconfig --del %{name}-ndb-mgm
 fi
 
 %post ndb-cpc
-/sbin/chkconfig --add mysql-ndb-cpc
-%service mysql-ndb-cpc restart "mysql NDB CPC"
+/sbin/chkconfig --add %{name}-ndb-cpc
+%service %{name}-ndb-cpc restart "mysql NDB CPC"
 
 %preun ndb-cpc
 if [ "$1" = "0" ]; then
-	%service mysql-ndb-cpc stop
-	/sbin/chkconfig --del mysql-ndb-cpc
+	%service %{name}-ndb-cpc stop
+	/sbin/chkconfig --del %{name}-ndb-cpc
 fi
 
 %post   libs -p /sbin/ldconfig
@@ -812,6 +766,7 @@ fi
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/handlersocket.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_file.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_udf.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/libpluginmecab.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/libfnv1a_udf.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/libfnv_udf.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/libmurmur_udf.so
