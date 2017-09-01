@@ -455,7 +455,7 @@ mysqlinit() {
 		MYSQL_CONFIG="$MYSQL_CLUSTER_DIR/mysqld.conf"
 	fi
 
-	show "Initializing cluster %s" "$clusterdir"; started
+	show "Initializing percona-server cluster %s" "$clusterdir"; started
 
 	# Check if not exist init database
 	if [ -d "$MYSQL_DATA_DIR/percona-server" ]; then

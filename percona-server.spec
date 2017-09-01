@@ -41,8 +41,8 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	0.4
-%define		percona_rel	16
+%define		rel	1
+%define		percona_rel	17
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -53,17 +53,17 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.18
+Version:	5.7.19
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	01a79e52b352f771ce2025b549b98d6a
+# Source0-md5:	6d4c45036d6acbfd8df5bf5afe1ff402
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
 Source101:      http://downloads.sourceforge.net/boost/boost_1_59_0.tar.bz2
-# Source101-md5:        6aa9a5c6a4ca1016edd0ed1178e3cb87
+# Source101-md5:	6aa9a5c6a4ca1016edd0ed1178e3cb87
 %endif
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
