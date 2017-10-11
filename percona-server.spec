@@ -567,7 +567,7 @@ CPPFLAGS="%{rpmcppflags}" \
 %install
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT/etc/{logrotate.d,rc.d/init.d,sysconfig,%{name},skel} \
-	   $RPM_BUILD_ROOT/var/{log/{archive,}/%{name},lib/%{name}} \
+	   $RPM_BUILD_ROOT/var/{log/{archive,}/%{name},lib/mysql} \
 	   $RPM_BUILD_ROOT%{_perconahome} \
 	   $RPM_BUILD_ROOT%{_libdir}
 
