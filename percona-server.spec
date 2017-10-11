@@ -842,7 +842,7 @@ fi
 
 %attr(700,mysql,mysql) %{_perconahome}
 # root:root is proper here for mysql.rpm while mysql:mysql is potential security hole
-%attr(751,root,root) /var/lib/%{name}
+%attr(751,root,root) /var/lib/mysql
 %attr(750,mysql,mysql) %dir /var/log/%{name}
 %attr(750,mysql,mysql) %dir /var/log/archive/%{name}
 %attr(640,mysql,mysql) %ghost /var/log/%{name}/*

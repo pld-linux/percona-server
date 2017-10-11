@@ -35,8 +35,8 @@ else
 	nls "Warning: Missing clusters config file %s" /etc/percona-server/clusters.conf
 	if [ -z "$MYSQL_DB_CLUSTERS" ]; then
 		nls "Warning: there are no configured clusters."
-		nls "Using default cluster /var/lib/percona-server (compatibility mode)"
-		MYSQL_DB_CLUSTERS=/var/lib/percona-server
+		nls "Using default cluster /var/lib/mysql (compatibility mode)"
+		MYSQL_DB_CLUSTERS=/var/lib/mysql
 	fi
 fi
 
@@ -160,7 +160,7 @@ mysqlgetconfig() {
 	local mode="$2"
 
 	# emulate old behaviour if only one cluster specified
-	if [ "$clusterdir" = "$MYSQL_DB_CLUSTERS" -a "$clusterdir" = "/var/lib/percona-server" -a -f /etc/mysqld.conf ]; then
+	if [ "$clusterdir" = "$MYSQL_DB_CLUSTERS" -a "$clusterdir" = "/var/lib/mysql" -a -f /etc/mysqld.conf ]; then
 		MYSQL_RA_COMPAT=yes
 		config_file=/etc/mysqld.conf
 	else
