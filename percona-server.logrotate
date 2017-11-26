@@ -29,6 +29,6 @@
 	daily
 
 	postrotate
-		/sbin/service mysql flush-logs
+		/sbin/service percona-server flush-logs
 	endscript
 }
