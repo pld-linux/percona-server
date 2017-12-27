@@ -41,7 +41,7 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	1
+%define		rel	2
 %define		percona_rel	18
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
@@ -738,12 +738,15 @@ fi
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}
 %attr(640,root,mysql) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}/clusters.conf
+%ifarch %{x8664}
 %attr(755,root,root) %{_bindir}/ldb
 %attr(755,root,root) %{_bindir}/mysql_ldb
+%attr(755,root,root) %{_bindir}/sst_dump
+%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_rocksdb.so
+%endif
 %attr(755,root,root) %{_bindir}/ps_mysqld_helper
 %attr(755,root,root) %{_bindir}/ps_tokudb_admin
 %attr(755,root,root) %{_bindir}/ps-admin
-%attr(755,root,root) %{_bindir}/sst_dump
 %attr(755,root,root) %{_sbindir}/innochecksum
 %attr(755,root,root) %{_sbindir}/my_print_defaults
 %attr(755,root,root) %{_sbindir}/myisamchk
@@ -770,7 +773,6 @@ fi
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_archive.so
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_blackhole.so
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_federated.so
-%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_rocksdb.so
 #%attr(755,root,root) %{_libdir}/%{name}/plugin/handlersocket.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_file.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_udf.so
