@@ -43,7 +43,7 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	2
+%define		rel	3
 %define		percona_rel	18
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
@@ -96,6 +96,7 @@ Patch24:	mysql-cmake.patch
 URL:		https://www.percona.com/software/mysql-database/percona-server
 BuildRequires:	bison >= 1.875
 BuildRequires:	cmake >= 2.8.2
+BuildRequires:	curl-devel
 BuildRequires:	readline-devel >= 6.2
 BuildRequires:	libstdc++-devel >= 5:4.0
 BuildRequires:	automake
@@ -108,6 +109,7 @@ BuildRequires:	ncurses-devel >= 4.2
 BuildRequires:	pam-devel
 %{?with_autodeps:BuildRequires:	perl-DBI}
 BuildRequires:	perl-devel >= 1:5.6.1
+BuildRequires:	protobuf-devel
 BuildRequires:	python-modules
 BuildRequires:	rpm-perlprov >= 4.1-13
 BuildRequires:	rpmbuild(macros) >= 1.597
@@ -551,6 +553,8 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DWITH_SCALABILITY_METRICS=ON \
 	-DWITH_SSL=%{?with_ssl:system}%{!?with_ssl:no} \
 	-DWITH_UNIT_TESTS=%{?with_tests:ON}%{!?with_tests:OFF} \
+	%{!?with_tokudb:-DWITHOUT_TOKUDB=ON} \
+	%{!?with_rocksdb:-DWITHOUT_ROCKSDB=ON} \
 %if %{without system_boost}
 	%{!?with_system_boost:-DWITH_BOOST="$(pwd)/$(ls -1d ../boost_*)"} \
 %endif
