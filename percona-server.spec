@@ -31,6 +31,7 @@
 %bcond_without	tcpd		# libwrap (tcp_wrappers) support
 %bcond_with	sphinx		# Sphinx storage engine support
 %bcond_without	tokudb		# TokuDB
+%bcond_without	rocksdb		# RocksDB
 # mysql needs boost 1.59.0 and doesn't support newer/older boost versions
 %bcond_with	system_boost	# Use system boost package
 %bcond_with	tests		# FIXME: don't run correctly
@@ -38,6 +39,7 @@
 
 # tokudb is only supported on x86_64
 %ifnarch %{x8664}
+%undefine	with_rocksdb
 %undefine	with_tokudb
 %endif
 
@@ -738,12 +740,6 @@ fi
 %attr(754,root,root) /etc/rc.d/init.d/%{name}
 %attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) /etc/sysconfig/%{name}
 %attr(640,root,mysql) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/%{name}/clusters.conf
-%ifarch %{x8664}
-%attr(755,root,root) %{_bindir}/ldb
-%attr(755,root,root) %{_bindir}/mysql_ldb
-%attr(755,root,root) %{_bindir}/sst_dump
-%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_rocksdb.so
-%endif
 %attr(755,root,root) %{_bindir}/ps_mysqld_helper
 %attr(755,root,root) %{_bindir}/ps_tokudb_admin
 %attr(755,root,root) %{_bindir}/ps-admin
@@ -829,6 +825,12 @@ fi
 %attr(755,root,root) %{_libdir}/%{name}/plugin/ha_tokudb.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/tokudb_backup.so
 %attr(755,root,root) %{_libdir}/libHotBackup.so
+%endif
+%if %{with rocksdb}
+%attr(755,root,root) %{_bindir}/ldb
+%attr(755,root,root) %{_bindir}/mysql_ldb
+%attr(755,root,root) %{_bindir}/sst_dump
+%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_rocksdb.so
 %endif
 # for plugins
 #%attr(755,root,root) %{_libdir}/libmysqlservices.so
