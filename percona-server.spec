@@ -568,7 +568,25 @@ CPPFLAGS="%{rpmcppflags}" \
 
 %{__make}
 
-%{?with_tests:%{__make} test}
+%if %{with tests}
+%{__make} test
+
+cd mysql-test
+
+MTR_BINDIR=$(pwd)/../build/ \
+%{__perl} ./mysql-test-run.pl \
+	--force \
+	--retry=0 \
+	--ssl \
+	--suite-timeout=720 \
+	--testcase-timeout=30 \
+	--mysqld=--binlog-format=mixed \
+	--force-restart \
+	--shutdown-timeout=60 \
+	--max-test-fail=0 \
+	--big-test \
+	--skip-test-list=unstable-tests
+%endif
 
 %install
 rm -rf $RPM_BUILD_ROOT
