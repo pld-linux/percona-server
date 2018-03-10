@@ -29,7 +29,7 @@
 %bcond_without	ssl		# OpenSSL support
 %bcond_with	systemtap	# systemtap/dtrace probes
 %bcond_without	tcpd		# libwrap (tcp_wrappers) support
-%bcond_with	sphinx		# Sphinx storage engine support
+%bcond_without	sphinx		# Sphinx storage engine support
 %bcond_without	tokudb		# TokuDB
 %bcond_without	rocksdb		# RocksDB
 # mysql needs boost 1.59.0 and doesn't support newer/older boost versions
@@ -43,7 +43,7 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	1
+%define		rel	2
 %define		percona_rel	20
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
@@ -87,7 +87,9 @@ Patch7:		lz4.patch
 
 Patch11:	mysql-upgrade.patch
 Patch12:	mysql-config.patch
-Patch18:	mysql-sphinx.patch
+Patch17:	mysql-sphinx.patch
+# https://github.com/sphinxsearch/sphinx/pull/32/
+Patch18:	mysql-5.7-sphinx.patch
 Patch19:	mysql-chain-certs.patch
 # from fedora
 Patch20:	mysql-dubious-exports.patch
@@ -498,7 +500,10 @@ Ten pakiet zawiera standardowego demona Percona Server NDB CPC.
 %if %{with sphinx}
 # http://www.sphinxsearch.com/docs/manual-0.9.9.html#sphinxse-mysql51
 mv sphinx-*/mysqlse storage/sphinx
-%patch18 -p1
+%patch17 -p1
+cd storage/sphinx
+%patch18 -p2
+cd ../..
 %endif
 %patch1 -p1
 
