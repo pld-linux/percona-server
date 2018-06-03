@@ -43,8 +43,8 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	2
-%define		percona_rel	20
+%define		rel	1
+%define		percona_rel	22
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -55,12 +55,12 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.21
+Version:	5.7.22
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	e5cf31dd63d268e78c247ffd3bde0164
+# Source0-md5:	a0b0488015d3d38a77c093b476452722
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
@@ -82,8 +82,6 @@ Source13:	%{name}-client.conf
 Source14:	my.cnf
 Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
-
-Patch7:		lz4.patch
 
 Patch11:	mysql-upgrade.patch
 Patch12:	mysql-config.patch
@@ -507,8 +505,6 @@ cd ../..
 %endif
 %patch1 -p1
 
-%patch7 -p1
-
 %patch19 -p1
 %patch20 -p1
 
@@ -687,10 +683,6 @@ mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysqlcheck
 
 # we don't package those (we have no -test or -testsuite pkg) and some of them just segfault
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_client_test
-%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql_client_test.1*
-%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql_client_test_embedded.1*
-%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql-stress-test.pl.1*
-%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql-test-run.pl.1*
 %{__rm} -r $RPM_BUILD_ROOT%{_datadir}/mysql-test
 # libmysqld examples
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql{_client_test_embedded,_embedded,test_embedded}
@@ -1043,8 +1035,6 @@ fi
 #%{_datadir}/sql-bench/[CDRl]*
 #%attr(755,root,root) %{_datadir}/sql-bench/[bcgirst]*
 %{_mandir}/man1/mysqlslap.1*
-%{_mandir}/man1/mysqltest.1*
-%{_mandir}/man1/mysqltest_embedded.1*
 
 #%files doc
 #%defattr(644,root,root,755)
