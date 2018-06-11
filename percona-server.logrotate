@@ -16,7 +16,7 @@
 /var/log/percona-server/slow.log
 /var/log/percona-server/update*
 {
-	olddir /var/log/archive/mysql
+	olddir /var/log/archive/percona-server
 	notifempty
 	missingok
 	create 640 mysql mysql
