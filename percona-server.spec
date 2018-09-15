@@ -43,7 +43,7 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	2
+%define		rel	3
 %define		percona_rel	22
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
