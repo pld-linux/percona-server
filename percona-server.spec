@@ -43,8 +43,8 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	3
-%define		percona_rel	22
+%define		rel	1
+%define		percona_rel	23
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -55,12 +55,12 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.22
+Version:	5.7.23
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	a0b0488015d3d38a77c093b476452722
+# Source0-md5:	8bf4dca1bd9593803a48c522728ade50
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
@@ -82,6 +82,7 @@ Source13:	%{name}-client.conf
 Source14:	my.cnf
 Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
+Patch2:		mysql-bug-91914.patch
 
 Patch11:	mysql-upgrade.patch
 Patch12:	mysql-config.patch
@@ -495,6 +496,8 @@ Ten pakiet zawiera standardowego demona Percona Server NDB CPC.
 
 %patch0 -p1
 
+%patch2 -p1
+
 %if %{with sphinx}
 # http://www.sphinxsearch.com/docs/manual-0.9.9.html#sphinxse-mysql51
 mv sphinx-*/mysqlse storage/sphinx
@@ -529,8 +532,8 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DCMAKE_BUILD_TYPE=%{!?debug:RelWithDebInfo}%{?debug:Debug} \
 	-DCMAKE_C_FLAGS_DEBUG="-fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0" \
 	-DCMAKE_CXX_FLAGS_DEBUG="-fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0" \
-	-DCMAKE_C_FLAGS_RELWITHDEBINFO="%{rpmcflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0" \
-	-DCMAKE_CXX_FLAGS_RELWITHDEBINFO="%{rpmcxxflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0" \
+	-DCMAKE_C_FLAGS_RELWITHDEBINFO="%{rpmcflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0 -Wno-shadow" \
+	-DCMAKE_CXX_FLAGS_RELWITHDEBINFO="%{rpmcxxflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0 -Wno-shadow" \
 	-DCOMPILATION_COMMENT="PLD/Linux Distribution Percona Server RPM" \
 	-DCURSES_INCLUDE_PATH=/usr/include/ncurses \
 	%{?with_systemtap:-DENABLE_DTRACE=ON} \
