@@ -39,3 +39,37 @@
  
    # Solaris flags
 
+--- percona-server-5.7.23-23/cmake/build_configurations/compiler_options.cmake.orig	2018-10-14 08:44:45.291573886 +0200
++++ percona-server-5.7.23-23/cmake/build_configurations/compiler_options.cmake	2018-10-14 08:44:55.181573772 +0200
+@@ -25,17 +25,17 @@
+   SET(64BIT 1)
+ ENDIF()
+ 
+-SET(CMAKE_CXX_STANDARD 98)
++SET(CMAKE_CXX_STANDARD 11)
+  
+ # Compiler options
+ IF(UNIX)  
+-  MY_CHECK_CXX_COMPILER_FLAG("-std=gnu++03" GNU03_SUPPORTED)
++  MY_CHECK_CXX_COMPILER_FLAG("-std=gnu++11" GNU11_SUPPORTED)
+ 
+-  IF(GNU03_SUPPORTED)
++  IF(GNU11_SUPPORTED)
+     IF(CMAKE_VERSION VERSION_LESS 3.1.0)
+-      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++03")
++      SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=gnu++11")
+     ELSE()
+-      SET(CMAKE_CXX98_EXTENSION_COMPILE_OPTION -std=gnu++03)
++      SET(CMAKE_CXX11_EXTENSION_COMPILE_OPTION -std=gnu++11)
+     ENDIF()
+   ENDIF()
+ 
+@@ -140,7 +140,7 @@
+ 
+       SET(COMMON_C_FLAGS            "-g ${SUNPRO_FLAGS}")
+       SET(COMMON_CXX_FLAGS          "-g0 ${SUNPRO_FLAGS}")
+-      SET(COMMON_CXX_FLAGS          "${COMMON_CXX_FLAGS} -std=c++03")
++      SET(COMMON_CXX_FLAGS          "${COMMON_CXX_FLAGS} -std=c++11")
+       SET(CMAKE_C_FLAGS_DEBUG       "${COMMON_C_FLAGS}")
+       SET(CMAKE_CXX_FLAGS_DEBUG     "${COMMON_CXX_FLAGS}")
+       SET(CMAKE_C_FLAGS_RELWITHDEBINFO   "-xO3 ${COMMON_C_FLAGS}")

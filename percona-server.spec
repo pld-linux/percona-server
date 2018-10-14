@@ -43,7 +43,7 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	1
+%define		rel	2
 %define		percona_rel	23
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
@@ -527,13 +527,19 @@ cd build
 # (it defaults to first cluster but user may change it to whatever
 # cluster it wants)
 
+%if "%{cc_version}" >= "7.0"
+FALLTHROUGH_OPT="-Wimplicit-fallthrough=0"
+%else
+FALLTHROUGH_OPT=
+%endif
+
 CPPFLAGS="%{rpmcppflags}" \
 %cmake .. \
 	-DCMAKE_BUILD_TYPE=%{!?debug:RelWithDebInfo}%{?debug:Debug} \
-	-DCMAKE_C_FLAGS_DEBUG="-fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0" \
-	-DCMAKE_CXX_FLAGS_DEBUG="-fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0" \
-	-DCMAKE_C_FLAGS_RELWITHDEBINFO="%{rpmcflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0 -Wno-shadow" \
-	-DCMAKE_CXX_FLAGS_RELWITHDEBINFO="%{rpmcxxflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing -Wimplicit-fallthrough=0 -Wno-shadow" \
+	-DCMAKE_C_FLAGS_DEBUG="-fno-omit-frame-pointer -fno-strict-aliasing $FALLTHROUGH_OPT" \
+	-DCMAKE_CXX_FLAGS_DEBUG="-fno-omit-frame-pointer -fno-strict-aliasing $FALLTHROUGH_OPT" \
+	-DCMAKE_C_FLAGS_RELWITHDEBINFO="%{rpmcflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing $FALLTHROUGH_OPT -Wno-shadow" \
+	-DCMAKE_CXX_FLAGS_RELWITHDEBINFO="%{rpmcxxflags} -DNDEBUG -fno-omit-frame-pointer -fno-strict-aliasing $FALLTHROUGH_OPT -Wno-shadow" \
 	-DCOMPILATION_COMMENT="PLD/Linux Distribution Percona Server RPM" \
 	-DCURSES_INCLUDE_PATH=/usr/include/ncurses \
 	%{?with_systemtap:-DENABLE_DTRACE=ON} \
