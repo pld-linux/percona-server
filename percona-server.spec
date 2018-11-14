@@ -43,8 +43,8 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	2
-%define		percona_rel	23
+%define		rel	1
+%define		percona_rel	24
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -60,7 +60,7 @@ Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	8bf4dca1bd9593803a48c522728ade50
+# Source0-md5:	5d8e7d4953217722335d3e7359978854
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
@@ -82,7 +82,6 @@ Source13:	%{name}-client.conf
 Source14:	my.cnf
 Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
-Patch2:		mysql-bug-91914.patch
 
 Patch11:	mysql-upgrade.patch
 Patch12:	mysql-config.patch
@@ -495,8 +494,6 @@ Ten pakiet zawiera standardowego demona Percona Server NDB CPC.
 %setup -q -n %{name}-%{version}-%{percona_rel} %{?with_sphinx:-a100} %{!?with_system_boost:-a101}
 
 %patch0 -p1
-
-%patch2 -p1
 
 %if %{with sphinx}
 # http://www.sphinxsearch.com/docs/manual-0.9.9.html#sphinxse-mysql51
