@@ -44,7 +44,7 @@
 %endif
 
 %define		rel	1
-%define		percona_rel	26
+%define		percona_rel	27
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -60,7 +60,7 @@ Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	bfe901f4681ce6735078180a7ccc6398
+# Source0-md5:	67dbcfe11202be3486ac54018c217ab5
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
