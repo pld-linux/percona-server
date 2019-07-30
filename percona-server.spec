@@ -43,8 +43,8 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	2
-%define		percona_rel	28
+%define		rel	1
+%define		percona_rel	29
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -55,12 +55,12 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.25
+Version:	5.7.26
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	9dbfe24ec6330c1b9831c42ff6b2e265
+# Source0-md5:	7ac77b01f578c00a1388ba4339a7a15f
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
@@ -82,6 +82,7 @@ Source13:	%{name}-client.conf
 Source14:	my.cnf
 Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
+Patch2:		mysql-protobuf.patch
 
 Patch11:	mysql-upgrade.patch
 Patch12:	mysql-config.patch
@@ -497,13 +498,14 @@ Ten pakiet zawiera standardowego demona Percona Server NDB CPC.
 
 %if %{with sphinx}
 # http://www.sphinxsearch.com/docs/manual-0.9.9.html#sphinxse-mysql51
-mv sphinx-*/mysqlse storage/sphinx
+%{__mv} sphinx-*/mysqlse storage/sphinx
 %patch17 -p1
 cd storage/sphinx
 %patch18 -p2
 cd ../..
 %endif
 %patch1 -p1
+%patch2 -p1
 
 %patch19 -p1
 %patch20 -p1
@@ -565,12 +567,12 @@ CPPFLAGS="%{rpmcppflags}" \
 %if %{without system_boost}
 	%{!?with_system_boost:-DWITH_BOOST="$(pwd)/$(ls -1d ../boost_*)"} \
 %endif
-	-DWITH_ZLIB=system \
-	-DWITH_READLINE=system \
-	-DWITH_LZ4=system \
 	-DWITH_LIBEVENT=system \
-	-DWITH_PROTOBUF=system \
+	-DWITH_LZ4=system \
 	-DWITH_MECAB=system \
+	-DWITH_PROTOBUF=system \
+	-DWITH_READLINE=system \
+	-DWITH_ZLIB=system \
 	-DTMPDIR=/var/tmp
 
 %{__make}
@@ -661,16 +663,16 @@ mv $RPM_BUILD_ROOT%{_mandir}/man1/{,mysql_}resolve_stack_dump.1
 %{?debug:nm -n $RPM_BUILD_ROOT%{_sbindir}/mysqld > $RPM_BUILD_ROOT%{_datadir}/%{name}/mysqld.sym}
 
 # do not clobber users $PATH
-mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysql_plugin
-mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysql_upgrade
-mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/innochecksum
-mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/myisamchk
-mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/myisamlog
-mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/myisampack
+%{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysql_plugin
+%{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysql_upgrade
+%{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/innochecksum
+%{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/myisamchk
+%{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/myisamlog
+%{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/myisampack
 #mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysql_fix_privilege_tables
-mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/my_print_defaults
+%{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/my_print_defaults
 sed -i -e 's#/usr/bin/my_print_defaults#%{_sbindir}/my_print_defaults#g' $RPM_BUILD_ROOT%{_bindir}/mysql_install_db
-mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysqlcheck
+%{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysqlcheck
 
 # delete - functionality in initscript / rpm
 # note: mysql_install_db (and thus resolveip) are needed by digikam
