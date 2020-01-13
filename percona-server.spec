@@ -43,8 +43,8 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	2
-%define		percona_rel	30
+%define		rel	1
+%define		percona_rel	31
 %include	/usr/lib/rpm/macros.perl
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -55,12 +55,12 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.27
+Version:	5.7.28
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	f4161888aa25073597bbf4c4e9226479
+# Source0-md5:	0e10c019af943dece4ef7d98cdb36010
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
@@ -84,6 +84,7 @@ Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
 Patch2:		mysql-protobuf.patch
 Patch3:		build.patch
+Patch4:		bug-92387.patch
 
 Patch11:	mysql-upgrade.patch
 Patch12:	mysql-config.patch
@@ -508,6 +509,7 @@ cd ../..
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
+%patch4 -p1
 
 %patch19 -p1
 %patch20 -p1
