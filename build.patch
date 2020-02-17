@@ -10,3 +10,14 @@
  #if defined(HAVE_PTHREAD_NP_H)
  # include <pthread_np.h>
  #endif
+--- percona-server-5.7.29-32/storage/rocksdb/CMakeLists.txt~	2020-01-20 15:25:37.000000000 +0100
++++ percona-server-5.7.29-32/storage/rocksdb/CMakeLists.txt	2020-02-17 10:50:15.600870732 +0100
+@@ -124,7 +124,7 @@ ENDIF()
+ # get a list of rocksdb library source files
+ # run with env -i to avoid passing variables
+ EXECUTE_PROCESS(
+-  COMMAND env -i ${CMAKE_CURRENT_SOURCE_DIR}/get_rocksdb_files.sh
++  COMMAND env -i PATH=$ENV{PATH} ${CMAKE_CURRENT_SOURCE_DIR}/get_rocksdb_files.sh
+   OUTPUT_VARIABLE SCRIPT_OUTPUT
+   WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+ )
