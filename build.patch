@@ -1,15 +1,3 @@
---- percona-server-5.7.27-30/storage/tokudb/PerconaFT/portability/portability.cc~	2019-08-20 06:44:15.000000000 +0200
-+++ percona-server-5.7.27-30/storage/tokudb/PerconaFT/portability/portability.cc	2019-08-23 10:06:37.642878792 +0200
-@@ -60,9 +60,6 @@ Copyright (c) 2006, 2015, Percona and/or
- #if defined(HAVE_SYS_SYSCALL_H)
- # include <sys/syscall.h>
- #endif
--#if defined(HAVE_SYS_SYSCTL_H)
--# include <sys/sysctl.h>
--#endif
- #if defined(HAVE_PTHREAD_NP_H)
- # include <pthread_np.h>
- #endif
 --- percona-server-5.7.29-32/storage/rocksdb/CMakeLists.txt~	2020-01-20 15:25:37.000000000 +0100
 +++ percona-server-5.7.29-32/storage/rocksdb/CMakeLists.txt	2020-02-17 10:50:15.600870732 +0100
 @@ -124,7 +124,7 @@ ENDIF()
@@ -21,3 +9,73 @@
    OUTPUT_VARIABLE SCRIPT_OUTPUT
    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
  )
+
+From 9dddf90bf54cfa29d14d199d19ad07d4590fbb1e Mon Sep 17 00:00:00 2001
+From: Thomas Deutschmann <whissi@gentoo.org>
+Date: Thu, 30 Apr 2020 22:55:34 +0200
+Subject: [PATCH 2/8] cmake: Remove -Werror
+
+Signed-off-by: Thomas Deutschmann <whissi@gentoo.org>
+---
+ cmake/maintainer.cmake | 6 ------
+ 1 file changed, 6 deletions(-)
+
+diff --git a/cmake/maintainer.cmake b/cmake/maintainer.cmake
+index 19db0d34f..3ed806be4 100644
+--- a/cmake/maintainer.cmake
++++ b/cmake/maintainer.cmake
+@@ -46,12 +46,6 @@ IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+       "${MY_CXX_WARNING_FLAGS} -Wno-null-conversion -Wno-unused-private-field")
+ ENDIF()
+ 
+-# Turn on Werror (warning => error) when using maintainer mode.
+-IF(MYSQL_MAINTAINER_MODE)
+-  SET(MY_C_WARNING_FLAGS "${MY_C_WARNING_FLAGS} -Werror")
+-  SET(MY_CXX_WARNING_FLAGS "${MY_CXX_WARNING_FLAGS} -Werror")
+-ENDIF()
+-
+ # Set warning flags for GCC/Clang
+ IF(CMAKE_COMPILER_IS_GNUCC OR CMAKE_C_COMPILER_ID MATCHES "Clang")
+   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MY_C_WARNING_FLAGS}")
+-- 
+2.26.2
+
+--- percona-server-5.7.30-33/storage/tokudb/PerconaFT/cmake_modules/TokuSetupCompiler.cmake~	2020-05-13 23:04:03.000000000 +0200
++++ percona-server-5.7.30-33/storage/tokudb/PerconaFT/cmake_modules/TokuSetupCompiler.cmake	2020-05-24 18:33:01.759229294 +0200
+@@ -170,10 +170,6 @@ if (NOT CMAKE_CXX_COMPILER_ID STREQUAL C
+   prepend_cflags_if_supported(-Wcast-align)
+ endif ()
+ 
+-## always want these
+-set(CMAKE_C_FLAGS "-Wall -Werror ${CMAKE_C_FLAGS}")
+-set(CMAKE_CXX_FLAGS "-Wall -Werror ${CMAKE_CXX_FLAGS}")
+-
+ # pick language dialect
+ set(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
+ check_cxx_compiler_flag(-std=c++11 HAVE_STDCXX11)
+--- percona-server-5.7.30-33/cmake/build_configurations/compiler_options.cmake~	2020-05-24 21:24:02.000000000 +0200
++++ percona-server-5.7.30-33/cmake/build_configurations/compiler_options.cmake	2020-05-24 22:56:20.402327716 +0200
+@@ -48,7 +48,10 @@ IF(UNIX)
+ 
+   # Default GCC flags
+   IF(CMAKE_COMPILER_IS_GNUCC)
+-    SET(COMMON_C_FLAGS               "-g -fabi-version=2 -fno-omit-frame-pointer -fno-strict-aliasing")
++    SET(COMMON_C_FLAGS               "-g -fno-omit-frame-pointer -fno-strict-aliasing")
++    IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)  # gcc-9 or older
++      SET(COMMON_CXX_FLAGS             "-fabi-version=2 ${COMMON_CXX_FLAGS}")
++    ENDIF()
+     # Disable inline optimizations for valgrind testing to avoid false positives
+     IF(WITH_VALGRIND)
+       SET(COMMON_C_FLAGS             "-fno-inline ${COMMON_C_FLAGS}")
+@@ -72,7 +75,10 @@ IF(UNIX)
+     SET(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 -D_FORTIFY_SOURCE=2 ${CMAKE_C_FLAGS_RELWITHDEBINFO} ${COMMON_C_FLAGS}")
+   ENDIF()
+   IF(CMAKE_COMPILER_IS_GNUCXX)
+-    SET(COMMON_CXX_FLAGS               "-g -fabi-version=2 -fno-omit-frame-pointer -fno-strict-aliasing")
++    SET(COMMON_CXX_FLAGS               "-g -fno-omit-frame-pointer -fno-strict-aliasing")
++    IF(CMAKE_CXX_COMPILER_VERSION VERSION_LESS 10.0)  # gcc-9 or older
++      SET(COMMON_CXX_FLAGS             "-fabi-version=2 ${COMMON_CXX_FLAGS}")
++    ENDIF()
+     # GCC 6 has C++14 as default, set it explicitly to the old default.
+     EXECUTE_PROCESS(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion
+                     OUTPUT_VARIABLE GXX_VERSION)
