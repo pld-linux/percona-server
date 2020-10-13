@@ -43,8 +43,8 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	3
-%define		percona_rel	33
+%define		rel	1
+%define		percona_rel	34
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
 Summary(fr.UTF-8):	Percona Server: un serveur SQL rapide et fiable
@@ -54,12 +54,12 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.30
+Version:	5.7.31
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	33b62c4bfa31009183cf260e17df150c
+# Source0-md5:	456b9fb28f2d6c72f135c114e5811808
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
