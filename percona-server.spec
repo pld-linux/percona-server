@@ -36,6 +36,7 @@
 %bcond_with	system_boost	# Use system boost package
 %bcond_with	tests		# FIXME: don't run correctly
 %bcond_with	ndb		# NDB is now a separate product, this here is broken, so disable it
+%bcond_without	coredumper	# coredumper support
 
 # tokudb is only supported on x86_64
 %ifnarch %{x8664}
@@ -43,7 +44,11 @@
 %undefine	with_tokudb
 %endif
 
-%define		rel	1
+%ifarch x32
+%undefine	with_coredumper
+%endif
+
+%define		rel	2
 %define		percona_rel	34
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -563,6 +568,7 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DWITH_SCALABILITY_METRICS=ON \
 	-DWITH_SSL=%{?with_ssl:system}%{!?with_ssl:no} \
 	-DWITH_UNIT_TESTS=%{?with_tests:ON}%{!?with_tests:OFF} \
+	-DWITH_COREDUMPER=%{?with_coredumper:ON}%{!?with_coredumper:OFF} \
 	%{!?with_tokudb:-DWITHOUT_TOKUDB=ON} \
 	%{!?with_rocksdb:-DWITHOUT_ROCKSDB=ON} \
 %if %{without system_boost}
