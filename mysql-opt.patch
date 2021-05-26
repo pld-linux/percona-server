@@ -1,6 +1,7 @@
---- percona-server-5.7.25-28/cmake/build_configurations/compiler_options.cmake.orig	2019-02-18 07:11:31.000000000 +0100
-+++ percona-server-5.7.25-28/cmake/build_configurations/compiler_options.cmake	2019-02-28 06:43:42.913206001 +0100
-@@ -25,17 +25,17 @@ IF(SIZEOF_VOIDP EQUAL 8)
+diff -urNp -x '*.orig' percona-server-5.7.31-34.org/cmake/build_configurations/compiler_options.cmake percona-server-5.7.31-34/cmake/build_configurations/compiler_options.cmake
+--- percona-server-5.7.31-34.org/cmake/build_configurations/compiler_options.cmake	2020-08-15 11:23:18.000000000 +0200
++++ percona-server-5.7.31-34/cmake/build_configurations/compiler_options.cmake	2021-05-26 15:13:06.336651991 +0200
+@@ -32,17 +32,17 @@ IF(SIZEOF_VOIDP EQUAL 8)
    SET(64BIT 1)
  ENDIF()
  
@@ -23,7 +24,7 @@
      ENDIF()
    ENDIF()
  
-@@ -61,8 +61,8 @@ IF(UNIX)
+@@ -71,8 +71,8 @@ IF(UNIX)
      IF(C_NO_EXPENSIVE_OPTIMIZATIONS)
        SET(COMMON_C_FLAGS "${COMMON_C_FLAGS} -fno-expensive-optimizations")
      ENDIF()
@@ -33,8 +34,8 @@
 +    SET(CMAKE_C_FLAGS_RELWITHDEBINFO "-O3 -D_FORTIFY_SOURCE=2 ${CMAKE_C_FLAGS_RELWITHDEBINFO} ${COMMON_C_FLAGS}")
    ENDIF()
    IF(CMAKE_COMPILER_IS_GNUCXX)
-     SET(COMMON_CXX_FLAGS               "-g -fabi-version=2 -fno-omit-frame-pointer -fno-strict-aliasing")
-@@ -95,8 +95,8 @@ IF(UNIX)
+     SET(COMMON_CXX_FLAGS               "-g -fno-omit-frame-pointer -fno-strict-aliasing")
+@@ -108,8 +108,8 @@ IF(UNIX)
    # Default Clang flags
    IF(CMAKE_C_COMPILER_ID MATCHES "Clang")
      SET(COMMON_C_FLAGS               "-g -fno-omit-frame-pointer -fno-strict-aliasing")
@@ -45,7 +46,7 @@
    ENDIF()
    IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
      SET(COMMON_CXX_FLAGS               "-g -fno-omit-frame-pointer -fno-strict-aliasing")
-@@ -146,10 +146,10 @@ IF(UNIX)
+@@ -153,10 +153,10 @@ IF(UNIX)
  
        SET(COMMON_C_FLAGS            "-g ${SUNPRO_FLAGS}")
        SET(COMMON_CXX_FLAGS          "-g0 ${SUNPRO_FLAGS}")

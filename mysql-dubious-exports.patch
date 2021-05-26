@@ -3,10 +3,21 @@ from libmysqlclient because mysql-connector-odbc and/or PHP depend on them.
 This limits the intrusion on application namespace.
 
 
-diff -Naur mysql-5.5.8.orig/include/my_sys.h mysql-5.5.8/include/my_sys.h
---- mysql-5.5.8.orig/include/my_sys.h	2010-12-03 12:58:24.000000000 -0500
-+++ mysql-5.5.8/include/my_sys.h	2010-12-27 14:27:23.956926896 -0500
-@@ -227,6 +227,7 @@
+diff -urNp -x '*.orig' percona-server-5.7.31-34.org/include/m_string.h percona-server-5.7.31-34/include/m_string.h
+--- percona-server-5.7.31-34.org/include/m_string.h	2020-08-15 11:23:18.000000000 +0200
++++ percona-server-5.7.31-34/include/m_string.h	2021-05-26 15:27:27.448089383 +0200
+@@ -193,6 +193,7 @@ static inline int native_strncasecmp(con
+ extern size_t strnlen(const char *s, size_t n);
+ #endif
+ 
++#define is_prefix mysql_is_prefix		/* namespace sanity */
+ extern int is_prefix(const char *, const char *);
+ 
+ /* Conversion routines */
+diff -urNp -x '*.orig' percona-server-5.7.31-34.org/include/my_sys.h percona-server-5.7.31-34/include/my_sys.h
+--- percona-server-5.7.31-34.org/include/my_sys.h	2020-08-15 11:23:18.000000000 +0200
++++ percona-server-5.7.31-34/include/my_sys.h	2021-05-26 15:27:27.444755877 +0200
+@@ -261,6 +261,7 @@ extern int (*is_killed_hook)(const void
  
  /* charsets */
  #define MY_ALL_CHARSETS_SIZE 2048
@@ -14,7 +25,7 @@ diff -Naur mysql-5.5.8.orig/include/my_sys.h mysql-5.5.8/include/my_sys.h
  extern MYSQL_PLUGIN_IMPORT CHARSET_INFO *default_charset_info;
  extern MYSQL_PLUGIN_IMPORT CHARSET_INFO *all_charsets[MY_ALL_CHARSETS_SIZE];
  extern CHARSET_INFO compiled_charsets[];
-@@ -914,6 +915,9 @@
+@@ -999,6 +1000,9 @@ extern uint get_charset_number(const cha
  extern uint get_collation_number(const char *name);
  extern const char *get_charset_name(uint cs_number);
  
@@ -23,10 +34,11 @@ diff -Naur mysql-5.5.8.orig/include/my_sys.h mysql-5.5.8/include/my_sys.h
 +
  extern CHARSET_INFO *get_charset(uint cs_number, myf flags);
  extern CHARSET_INFO *get_charset_by_name(const char *cs_name, myf flags);
- extern CHARSET_INFO *get_charset_by_csname(const char *cs_name,
---- percona-server-5.7.12-5/include/mysql.h.pp~	2016-06-01 09:44:09.000000000 +0300
-+++ percona-server-5.7.12-5/include/mysql.h.pp	2016-06-20 09:12:25.119724253 +0300
-@@ -128,7 +128,7 @@
+ extern CHARSET_INFO *my_collation_get_by_name(MY_CHARSET_LOADER *loader,
+diff -urNp -x '*.orig' percona-server-5.7.31-34.org/include/mysql.h.pp percona-server-5.7.31-34/include/mysql.h.pp
+--- percona-server-5.7.31-34.org/include/mysql.h.pp	2020-08-15 11:23:18.000000000 +0200
++++ percona-server-5.7.31-34/include/mysql.h.pp	2021-05-26 15:27:27.448089383 +0200
+@@ -128,7 +128,7 @@ void my_net_local_init(NET *net);
  void net_end(NET *net);
  void net_clear(NET *net, my_bool check_buffer);
  void net_claim_memory_ownership(NET *net);
@@ -35,9 +47,10 @@ diff -Naur mysql-5.5.8.orig/include/my_sys.h mysql-5.5.8/include/my_sys.h
  my_bool net_flush(NET *net);
  my_bool my_net_write(NET *net,const unsigned char *packet, size_t len);
  my_bool net_write_command(NET *net,unsigned char command,
---- percona-server-5.7.12-5/include/mysql_com.h~	2016-06-01 09:44:09.000000000 +0300
-+++ percona-server-5.7.12-5/include/mysql_com.h	2016-06-20 09:12:01.301815678 +0300
-@@ -509,6 +509,7 @@
+diff -urNp -x '*.orig' percona-server-5.7.31-34.org/include/mysql_com.h percona-server-5.7.31-34/include/mysql_com.h
+--- percona-server-5.7.31-34.org/include/mysql_com.h	2020-08-15 11:23:18.000000000 +0200
++++ percona-server-5.7.31-34/include/mysql_com.h	2021-05-26 15:27:27.448089383 +0200
+@@ -522,6 +522,7 @@ void my_net_local_init(NET *net);
  void net_end(NET *net);
  void net_clear(NET *net, my_bool check_buffer);
  void net_claim_memory_ownership(NET *net);
@@ -45,13 +58,3 @@ diff -Naur mysql-5.5.8.orig/include/my_sys.h mysql-5.5.8/include/my_sys.h
  my_bool net_realloc(NET *net, size_t length);
  my_bool	net_flush(NET *net);
  my_bool	my_net_write(NET *net,const unsigned char *packet, size_t len);
---- mysql-5.5.9/include/m_string.h~	2011-01-20 00:37:08.000000000 +0200
-+++ mysql-5.5.9/include/m_string.h	2011-03-31 16:36:35.184588054 +0300
-@@ -118,6 +118,7 @@
- extern size_t strnlen(const char *s, size_t n);
- #endif
- 
-+#define is_prefix mysql_is_prefix		/* namespace sanity */
- extern int is_prefix(const char *, const char *);
- 
- /* Conversion routines */
