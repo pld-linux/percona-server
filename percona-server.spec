@@ -48,7 +48,7 @@
 %undefine	with_coredumper
 %endif
 
-%define		rel	3
+%define		rel	4
 %define		percona_rel	34
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -88,17 +88,14 @@ Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
 Patch2:		mysql-protobuf.patch
 Patch3:		build.patch
-
-Patch11:	mysql-upgrade.patch
-Patch12:	mysql-config.patch
-Patch17:	mysql-sphinx.patch
+Patch4:		mysql-sphinx.patch
 # https://github.com/sphinxsearch/sphinx/pull/32/
-Patch18:	mysql-5.7-sphinx.patch
-Patch19:	mysql-chain-certs.patch
+Patch5:		mysql-5.7-sphinx.patch
+Patch6:		mysql-chain-certs.patch
 # from fedora
-Patch20:	mysql-dubious-exports.patch
-
-Patch24:	mysql-cmake.patch
+Patch7:		mysql-dubious-exports.patch
+Patch8:		mysql-cmake.patch
+Patch9:		openssl-3.patch
 URL:		https://www.percona.com/software/mysql-database/percona-server
 BuildRequires:	bison >= 1.875
 BuildRequires:	cmake >= 2.8.2
@@ -129,7 +126,6 @@ Requires(pre):	/bin/id
 Requires(pre):	/usr/bin/getgid
 Requires(pre):	/usr/sbin/groupadd
 Requires(pre):	/usr/sbin/useradd
-Requires(triggerpostun):	sed >= 4.0
 Requires:	%{name}-charsets = %{version}-%{release}
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	/usr/bin/setsid
@@ -498,25 +494,22 @@ Ten pakiet zawiera standardowego demona Percona Server NDB CPC.
 
 %prep
 %setup -q -n %{name}-%{version}-%{percona_rel} %{?with_sphinx:-a100} %{!?with_system_boost:-a101}
-
 %patch0 -p1
-
 %if %{with sphinx}
 # http://www.sphinxsearch.com/docs/manual-0.9.9.html#sphinxse-mysql51
 %{__mv} sphinx-*/mysqlse storage/sphinx
-%patch17 -p1
+%patch4 -p1
 cd storage/sphinx
-%patch18 -p2
+%patch5 -p2
 cd ../..
 %endif
 %patch1 -p1
 %patch2 -p1
 %patch3 -p1
-
-%patch19 -p1
-%patch20 -p1
-
-%patch24 -p1
+%patch6 -p1
+%patch7 -p1
+%patch8 -p1
+%patch9 -p1
 
 # to get these files rebuild
 [ -f sql/sql_yacc.cc ] && %{__rm} sql/sql_yacc.cc
