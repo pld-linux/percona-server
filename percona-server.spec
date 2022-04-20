@@ -541,6 +541,7 @@ CPPFLAGS="%{rpmcppflags}" \
 	-DCOMPILATION_COMMENT="PLD/Linux Distribution Percona Server RPM" \
 	-DCURSES_INCLUDE_PATH=/usr/include/ncurses \
 	%{?with_systemtap:-DENABLE_DTRACE=ON} \
+	-DALLOW_NO_SSE42=ON \
 	-DFEATURE_SET="community" \
 	-DINSTALL_LAYOUT=RPM \
 	-DINSTALL_LIBDIR=%{_lib} \
