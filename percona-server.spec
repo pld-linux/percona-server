@@ -10,12 +10,14 @@
 #     https://bugs.launchpad.net/pld-linux/+bug/381904
 #     (profiling disabled temporaily to workaround this)
 # - unpackaged files:
-#        /usr/COPYING.AGPLv3
-#        /usr/COPYING.GPLv2
-#        /usr/PATENTS
-#        /usr/README.md
-#        /usr/bin/mysqlxtest
-#        /usr/include/backup.h
+#   /usr/bin/mysqlxtest
+#   /usr/cmake/coredumper-relwithdebinfo.cmake
+#   /usr/cmake/coredumper.cmake
+#   /usr/include/coredumper/coredumper.h
+#   /usr/lib/libcoredumper.a
+#   /usr/lib/percona-server/plugin/data_masking.ini
+#   /usr/lib/percona-server/plugin/data_masking.so
+#   /usr/lib/percona-server/plugin/udf_example.so
 # NOTE:
 # - mysql 'root' user will be 'root' not 'mysql' with 5.7 package
 #   this is to make pld consistent what the rest of the world uses.
@@ -48,8 +50,8 @@
 %undefine	with_coredumper
 %endif
 
-%define		rel	2
-%define		percona_rel	40
+%define		rel	1
+%define		percona_rel	41
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
 Summary(fr.UTF-8):	Percona Server: un serveur SQL rapide et fiable
@@ -59,12 +61,12 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.37
+Version:	5.7.38
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
-Source0:	https://www.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	ab5a63fbe6872b719c49f1bbf091c09b
+Source0:	https://downloads.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
+# Source0-md5:	4d499d3881a2496db2d537d6c9ff30ce
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
@@ -137,7 +139,7 @@ Provides:	MySQL-server
 Provides:	group(mysql)
 Provides:	msqlormysql
 Provides:	user(mysql)
-Obsoletes:	MySQL
+Obsoletes:	MySQL < 3.22.27
 Obsoletes:	mysql-server
 Conflicts:	logrotate < 3.8.0
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
@@ -303,7 +305,7 @@ Group:		Applications/Databases
 Requires:	%{name}-charsets = %{version}-%{release}
 Requires:	%{name}-libs = %{version}-%{release}
 Requires:	readline >= 6.2
-Obsoletes:	MySQL-client
+Obsoletes:	MySQL-client < 3.22.27
 
 %description client
 This package contains the standard Percona Server clients.
@@ -327,7 +329,7 @@ Este pacote contém os clientes padrão para o Percona Server.
 Summary:	Shared libraries for Percona Server
 Summary(pl.UTF-8):	Biblioteki współdzielone Percona Server
 Group:		Libraries
-Obsoletes:	libmysql10
+Obsoletes:	libmysql10 < 4
 Obsoletes:	mysql-doc < 4.1.12
 
 %description libs
@@ -346,8 +348,8 @@ Group:		Development/Libraries
 Requires:	%{name}-libs = %{version}-%{release}
 %{?with_ssl:Requires: openssl-devel}
 Requires:	zlib-devel
-Obsoletes:	MySQL-devel
-Obsoletes:	libmysql10-devel
+Obsoletes:	MySQL-devel < 3.22.27
+Obsoletes:	libmysql10-devel < 4
 Obsoletes:	webscalesql-devel
 
 %description devel
@@ -383,7 +385,7 @@ Summary(ru.UTF-8):	Percona Server - статические библиотеки
 Summary(uk.UTF-8):	Percona Server - статичні бібліотеки
 Group:		Development/Libraries
 Requires:	%{name}-devel = %{version}-%{release}
-Obsoletes:	MySQL-static
+Obsoletes:	MySQL-static < 3.22.27
 
 %description static
 Percona Server static libraries.
@@ -409,7 +411,7 @@ Group:		Applications/Databases
 Requires:	%{name} = %{version}-%{release}
 Requires:	%{name}-client
 Requires:	perl(DBD::mysql)
-Obsoletes:	MySQL-bench
+Obsoletes:	MySQL-bench < 3.22.27
 
 %description bench
 This package contains Percona Server benchmark scripts and data.
@@ -428,17 +430,6 @@ Percona Server.
 %description bench -l uk.UTF-8
 Цей пакет містить скрипти та дані для оцінки продуктивності Percona
 Server.
-
-%package doc
-Summary:	Percona Server manual
-Summary(pl.UTF-8):	Podręcznik użytkownika Percona Server
-Group:		Applications/Databases
-
-%description doc
-This package contains manual in HTML format.
-
-%description doc -l pl.UTF-8
-Podręcznik Percona Server-a w formacie HTML.
 
 %package ndb
 Summary:	Percona Server - NDB Storage Engine Daemon
@@ -509,7 +500,9 @@ cd ../..
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
+%if "%(pkg-config --modversion libssl)" >= "3.0"
 %patch9 -p1
+%endif
 
 # to get these files rebuild
 [ -f sql/sql_yacc.cc ] && %{__rm} sql/sql_yacc.cc
@@ -652,9 +645,6 @@ sed -i -e '/libs/s/-lprobes_mysql//' $RPM_BUILD_ROOT%{_bindir}/mysql_config
 mv $RPM_BUILD_ROOT%{_bindir}/{,mysql_}resolve_stack_dump
 mv $RPM_BUILD_ROOT%{_mandir}/man1/{,mysql_}resolve_stack_dump.1
 
-# move to _sysconfdir
-#mv $RPM_BUILD_ROOT{%{_bindir},%{_sysconfdir}}/mysqlaccess.conf
-
 # not useful without -debug build
 %{!?debug:%{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_resolve_stack_dump}
 %{!?debug:%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql_resolve_stack_dump.1}
@@ -670,7 +660,6 @@ mv $RPM_BUILD_ROOT%{_mandir}/man1/{,mysql_}resolve_stack_dump.1
 %{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/myisamchk
 %{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/myisamlog
 %{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/myisampack
-#mv $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysql_fix_privilege_tables
 %{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/my_print_defaults
 sed -i -e 's#/usr/bin/my_print_defaults#%{_sbindir}/my_print_defaults#g' $RPM_BUILD_ROOT%{_bindir}/mysql_install_db
 %{__mv} $RPM_BUILD_ROOT{%{_bindir},%{_sbindir}}/mysqlcheck
@@ -776,7 +765,6 @@ fi
 %attr(755,root,root) %{_sbindir}/myisamchk
 %attr(755,root,root) %{_sbindir}/myisamlog
 %attr(755,root,root) %{_sbindir}/myisampack
-#%attr(755,root,root) %{_sbindir}/mysql_fix_privilege_tables
 %attr(755,root,root) %{_sbindir}/mysql_plugin
 %attr(755,root,root) %{_sbindir}/mysql_upgrade
 %attr(755,root,root) %{_sbindir}/mysqlcheck
@@ -794,10 +782,6 @@ fi
 %attr(755,root,root) %{_libdir}/%{name}/plugin/connection_control.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/dialog.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/group_replication.so
-#%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_archive.so
-#%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_blackhole.so
-#%attr(755,root,root) %{_libdir}/%{name}/plugin/ha_federated.so
-#%attr(755,root,root) %{_libdir}/%{name}/plugin/handlersocket.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_file.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_udf.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_vault.so
@@ -860,14 +844,11 @@ fi
 %attr(755,root,root) %{_bindir}/sst_dump
 %attr(755,root,root) %{_libdir}/%{name}/plugin/ha_rocksdb.so
 %endif
-# for plugins
-#%attr(755,root,root) %{_libdir}/libmysqlservices.so
 %{_mandir}/man1/innochecksum.1*
 %{_mandir}/man1/my_print_defaults.1*
 %{_mandir}/man1/myisamchk.1*
 %{_mandir}/man1/myisamlog.1*
 %{_mandir}/man1/myisampack.1*
-#%{_mandir}/man1/mysql_fix_privilege_tables.1*
 %{_mandir}/man1/mysql_plugin.1*
 %{_mandir}/man1/mysql_upgrade.1*
 %{_mandir}/man1/mysqlcheck.1*
@@ -900,7 +881,6 @@ fi
 %{_datadir}/%{name}/dictionary.txt
 %{_datadir}/%{name}/fill_help_tables.sql
 %{_datadir}/%{name}/innodb_memcached_config.sql
-#%{_datadir}/%{name}/mysql_fix_privilege_tables.sql
 # Don't mark these with %%lang. These are used depending
 # on database client settings.
 %{_datadir}/%{name}/bulgarian
@@ -934,7 +914,6 @@ fi
 
 %files extras
 %defattr(644,root,root,755)
-#%attr(755,root,root) %{_bindir}/msql2mysql
 %attr(755,root,root) %{_bindir}/myisam_ftdump
 %attr(755,root,root) %{_bindir}/mysql_install_db
 %attr(755,root,root) %{_bindir}/mysql_secure_installation
@@ -942,7 +921,6 @@ fi
 %attr(755,root,root) %{_bindir}/perror
 %attr(755,root,root) %{_bindir}/replace
 %attr(755,root,root) %{_bindir}/resolveip
-#%{_mandir}/man1/msql2mysql.1*
 %{_mandir}/man1/myisam_ftdump.1*
 %{_mandir}/man1/mysql_install_db.1*
 %{_mandir}/man1/mysql_secure_installation.1*
@@ -953,20 +931,7 @@ fi
 
 %files extras-perl
 %defattr(644,root,root,755)
-#%attr(755,root,root) %{_bindir}/mysql_convert_table_format
-#%attr(755,root,root) %{_bindir}/mysql_find_rows
-#%attr(755,root,root) %{_bindir}/mysql_fix_extensions
-#%attr(755,root,root) %{_bindir}/mysql_setpermission
-#%attr(755,root,root) %{_bindir}/mysql_zap
-#%attr(755,root,root) %{_bindir}/mysqlaccess
 %attr(755,root,root) %{_bindir}/mysqldumpslow
-#%attr(640,root,root) %config(noreplace) %verify(not md5 mtime size) %{_sysconfdir}/mysqlaccess.conf
-#%{_mandir}/man1/mysql_convert_table_format.1*
-#%{_mandir}/man1/mysql_find_rows.1*
-#%{_mandir}/man1/mysql_fix_extensions.1*
-#%{_mandir}/man1/mysql_setpermission.1*
-#%{_mandir}/man1/mysql_zap.1*
-#%{_mandir}/man1/mysqlaccess.1*
 %{_mandir}/man1/mysqldumpslow.1*
 
 %files client
@@ -978,7 +943,6 @@ fi
 %attr(755,root,root) %{_bindir}/mysql_ssl_rsa_setup
 %attr(755,root,root) %{_bindir}/mysqladmin
 %attr(755,root,root) %{_bindir}/mysqlbinlog
-#%attr(755,root,root) %{_bindir}/mysqlbug
 %attr(755,root,root) %{_bindir}/mysqldump
 %attr(755,root,root) %{_bindir}/mysqlimport
 %attr(755,root,root) %{_bindir}/mysqlpump
@@ -990,7 +954,6 @@ fi
 %{_mandir}/man1/mysql_ssl_rsa_setup.1*
 %{_mandir}/man1/mysqladmin.1*
 %{_mandir}/man1/mysqlbinlog.1*
-#%{_mandir}/man1/mysqlbug.1*
 %{_mandir}/man1/mysqldump.1*
 %{_mandir}/man1/mysqlimport.1*
 %{_mandir}/man1/mysqlpump.1*
@@ -1004,8 +967,6 @@ fi
 %{_sysconfdir}/%{name}/my.cnf
 %attr(755,root,root) %{_libdir}/libperconaserverclient.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libperconaserverclient.so.20
-#%attr(755,root,root) %{_libdir}/libperconaserverclient_r.so.*.*.*
-#%attr(755,root,root) %ghost %{_libdir}/libperconaserverclient_r.so.18
 %if %{with ndb}
 %attr(755,root,root) %{_libdir}/libndbclient.so.*.*.*
 %attr(755,root,root) %ghost %{_libdir}/libndbclient.so.3
@@ -1015,12 +976,10 @@ fi
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/mysql_config
 %attr(755,root,root) %{_libdir}/libperconaserverclient.so
-#%attr(755,root,root) %{_libdir}/libperconaserverclient_r.so
 %{_pkgconfigdir}/perconaserverclient.pc
 %if %{with ndb}
 %attr(755,root,root) %{_libdir}/libndbclient.so
 %endif
-#%{_includedir}/backup.h
 # static-only so far
 %{_libdir}/libmysqld.a
 %{_libdir}/libmysqlservices.a
@@ -1031,7 +990,6 @@ fi
 %files static
 %defattr(644,root,root,755)
 %{_libdir}/libperconaserverclient.a
-#%{_libdir}/libperconaserverclient_r.a
 %if %{with ndb}
 %{_libdir}/libndbclient.a
 %endif
@@ -1040,14 +998,7 @@ fi
 %defattr(644,root,root,755)
 %attr(755,root,root) %{_bindir}/mysqlslap
 %attr(755,root,root) %{_bindir}/mysqltest
-#%dir %{_datadir}/sql-bench
-#%{_datadir}/sql-bench/[CDRl]*
-#%attr(755,root,root) %{_datadir}/sql-bench/[bcgirst]*
 %{_mandir}/man1/mysqlslap.1*
-
-#%files doc
-#%defattr(644,root,root,755)
-#%doc Docs/manual.html Docs/manual_toc.html
 
 %if %{with ndb}
 %files ndb
