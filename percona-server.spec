@@ -50,8 +50,8 @@
 %undefine	with_coredumper
 %endif
 
-%define		rel	2
-%define		percona_rel	41
+%define		rel	1
+%define		percona_rel	44
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
 Summary(fr.UTF-8):	Percona Server: un serveur SQL rapide et fiable
@@ -61,12 +61,12 @@ Summary(ru.UTF-8):	Percona Server - быстрый SQL-сервер
 Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
-Version:	5.7.38
+Version:	5.7.41
 Release:	%{percona_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://downloads.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
-# Source0-md5:	4d499d3881a2496db2d537d6c9ff30ce
+# Source0-md5:	fa49686b60b4148bc6d351b8ba6b9ef8
 Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
@@ -97,7 +97,6 @@ Patch6:		mysql-chain-certs.patch
 # from fedora
 Patch7:		mysql-dubious-exports.patch
 Patch8:		mysql-cmake.patch
-Patch9:		openssl-3.patch
 URL:		https://www.percona.com/software/mysql-database/percona-server
 BuildRequires:	bison >= 1.875
 BuildRequires:	cmake >= 2.8.2
@@ -500,9 +499,6 @@ cd ../..
 %patch6 -p1
 %patch7 -p1
 %patch8 -p1
-%if "%(pkg-config --modversion libssl)" >= "3.0"
-%patch9 -p1
-%endif
 
 # to get these files rebuild
 [ -f sql/sql_yacc.cc ] && %{__rm} sql/sql_yacc.cc

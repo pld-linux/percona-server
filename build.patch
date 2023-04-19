@@ -9,22 +9,10 @@
      OUTPUT_VARIABLE SCRIPT_OUTPUT
      WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
    )
-From 9dddf90bf54cfa29d14d199d19ad07d4590fbb1e Mon Sep 17 00:00:00 2001
-From: Thomas Deutschmann <whissi@gentoo.org>
-Date: Thu, 30 Apr 2020 22:55:34 +0200
-Subject: [PATCH 2/8] cmake: Remove -Werror
-
-Signed-off-by: Thomas Deutschmann <whissi@gentoo.org>
----
- cmake/maintainer.cmake | 6 ------
- 1 file changed, 6 deletions(-)
-
-diff --git a/cmake/maintainer.cmake b/cmake/maintainer.cmake
-index 19db0d34f..3ed806be4 100644
---- a/cmake/maintainer.cmake
-+++ b/cmake/maintainer.cmake
-@@ -37,12 +37,6 @@ IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang"
-       "${MY_CXX_WARNING_FLAGS} -Wno-null-conversion -Wno-unused-private-field")
+--- a/cmake/maintainer.cmake~	2023-02-28 18:21:35.000000000 +0100
++++ b/cmake/maintainer.cmake	2023-04-19 16:21:27.342942580 +0200
+@@ -45,12 +45,6 @@ IF(CMAKE_CXX_COMPILER_ID MATCHES "Clang"
+   STRING_APPEND(MY_CXX_WARNING_FLAGS " -Wno-unused-parameter -Wno-unused-but-set-variable")
  ENDIF()
  
 -# Turn on Werror (warning => error) when using maintainer mode.
