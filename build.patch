@@ -38,3 +38,13 @@
  set(CMAKE_C_FLAGS "-std=c99 ${CMAKE_C_FLAGS}")
  check_cxx_compiler_flag(-std=c++11 HAVE_STDCXX11)
 
+--- percona-server-5.7.42-46/storage/rocksdb/rocksdb/db/range_del_aggregator.h~	2023-05-29 14:06:13.000000000 +0200
++++ percona-server-5.7.42-46/storage/rocksdb/rocksdb/db/range_del_aggregator.h	2023-07-13 12:01:33.789957701 +0200
+@@ -6,6 +6,7 @@
+ #pragma once
+ 
+ #include <algorithm>
++#include <cstdio>
+ #include <iterator>
+ #include <list>
+ #include <map>
