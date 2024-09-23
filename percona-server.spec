@@ -673,10 +673,11 @@ sed -i -e 's#/usr/bin/my_print_defaults#%{_sbindir}/my_print_defaults#g' $RPM_BU
 %{__rm} -r $RPM_BUILD_ROOT%{_includedir}/coredumper
 %{__rm} $RPM_BUILD_ROOT%{_prefix}/cmake/coredumper*.cmake
 %endif
-# wrong location
+%if %{with tokudb}
+# some junk from tokudb
 %{__rm} $RPM_BUILD_ROOT%{_prefix}/{COPYING.AGPLv3,COPYING.GPLv2,PATENTS,README.md}
-# part of tokudb-backup-plugin?
 %{__rm} $RPM_BUILD_ROOT%{_includedir}/backup.h
+%endif
 
 # not needed
 %{__rm} $RPM_BUILD_ROOT%{_libdir}/%{name}/plugin/libdaemon_example.*
