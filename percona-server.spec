@@ -9,13 +9,6 @@
 # - segfaults on select from non-mysql user (caused by builder environment):
 #     https://bugs.launchpad.net/pld-linux/+bug/381904
 #     (profiling disabled temporaily to workaround this)
-# - unpackaged files:
-#   /usr/bin/mysqlxtest
-#   /usr/cmake/coredumper-relwithdebinfo.cmake
-#   /usr/cmake/coredumper.cmake
-#   /usr/include/coredumper/coredumper.h
-#   /usr/lib/libcoredumper.a
-#   /usr/lib/percona-server/plugin/udf_example.so
 # NOTE:
 # - mysql 'root' user will be 'root' not 'mysql' with 5.7 package
 #   this is to make pld consistent what the rest of the world uses.
@@ -636,8 +629,8 @@ sed -i -e '/libs/s/-lprobes_mysql//' $RPM_BUILD_ROOT%{_bindir}/mysql_config
 %{__rm} -r $RPM_BUILD_ROOT%{_datadir}/%{name}-support
 
 # rename not to be so generic name
-mv $RPM_BUILD_ROOT%{_bindir}/{,mysql_}resolve_stack_dump
-mv $RPM_BUILD_ROOT%{_mandir}/man1/{,mysql_}resolve_stack_dump.1
+%{__mv} $RPM_BUILD_ROOT%{_bindir}/{,mysql_}resolve_stack_dump
+%{__mv} $RPM_BUILD_ROOT%{_mandir}/man1/{,mysql_}resolve_stack_dump.1
 
 # not useful without -debug build
 %{!?debug:%{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_resolve_stack_dump}
@@ -663,25 +656,30 @@ sed -i -e 's#/usr/bin/my_print_defaults#%{_sbindir}/my_print_defaults#g' $RPM_BU
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysqld_safe
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysqld_multi
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysqld_{multi,safe}*
-#rm $RPM_BUILD_ROOT%{_datadir}/%{name}/mysql-log-rotate
-#rm $RPM_BUILD_ROOT%{_datadir}/%{name}/mysql.server
-#rm $RPM_BUILD_ROOT%{_datadir}/%{name}/binary-configure
 %{__rm} $RPM_BUILD_ROOT%{_datadir}/%{name}/errmsg-utf8.txt
-#%{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_waitpid
-#%{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql_waitpid.1*
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysql.server*
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/mysqlman.1*
 %{__rm} $RPM_BUILD_ROOT%{_mandir}/man1/comp_err.1*
 
 # we don't package those (we have no -test or -testsuite pkg) and some of them just segfault
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql_client_test
+%{__rm} $RPM_BUILD_ROOT%{_bindir}/mysqlxtest
 %{__rm} -r $RPM_BUILD_ROOT%{_datadir}/mysql-test
 # libmysqld examples
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql{_client_test_embedded,_embedded,test_embedded}
+# bundled coredumper library (with mistaken paths)
+%{__rm} $RPM_BUILD_ROOT%{_prefix}/lib/libcoredumper.a
+%{__rm} -r $RPM_BUILD_ROOT%{_includedir}/coredumper
+%{__rm} $RPM_BUILD_ROOT%{_prefix}/cmake/coredumper*.cmake
+# wrong location
+%{__rm} $RPM_BUILD_ROOT%{_prefix}/{COPYING.AGPLv3,COPYING.GPLv2,PATENTS,README.md}
+# part of tokudb-backup-plugin?
+%{__rm} $RPM_BUILD_ROOT%{_includedir}/backup.h
 
 # not needed
 %{__rm} $RPM_BUILD_ROOT%{_libdir}/%{name}/plugin/libdaemon_example.*
 %{__rm} $RPM_BUILD_ROOT%{_libdir}/%{name}/plugin/daemon_example.ini
+%{__rm} $RPM_BUILD_ROOT%{_libdir}/%{name}/plugin/udf_example.so
 
 # not an .info file
 %{__rm} $RPM_BUILD_ROOT%{_infodir}/mysql.info
