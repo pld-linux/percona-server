@@ -667,10 +667,12 @@ sed -i -e 's#/usr/bin/my_print_defaults#%{_sbindir}/my_print_defaults#g' $RPM_BU
 %{__rm} -r $RPM_BUILD_ROOT%{_datadir}/mysql-test
 # libmysqld examples
 %{__rm} $RPM_BUILD_ROOT%{_bindir}/mysql{_client_test_embedded,_embedded,test_embedded}
+%if %{with coredumper}
 # bundled coredumper library (with mistaken paths)
 %{__rm} $RPM_BUILD_ROOT%{_prefix}/lib/libcoredumper.a
 %{__rm} -r $RPM_BUILD_ROOT%{_includedir}/coredumper
 %{__rm} $RPM_BUILD_ROOT%{_prefix}/cmake/coredumper*.cmake
+%endif
 # wrong location
 %{__rm} $RPM_BUILD_ROOT%{_prefix}/{COPYING.AGPLv3,COPYING.GPLv2,PATENTS,README.md}
 # part of tokudb-backup-plugin?
