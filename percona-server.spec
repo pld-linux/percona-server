@@ -15,8 +15,6 @@
 #   /usr/cmake/coredumper.cmake
 #   /usr/include/coredumper/coredumper.h
 #   /usr/lib/libcoredumper.a
-#   /usr/lib/percona-server/plugin/data_masking.ini
-#   /usr/lib/percona-server/plugin/data_masking.so
 #   /usr/lib/percona-server/plugin/udf_example.so
 # NOTE:
 # - mysql 'root' user will be 'root' not 'mysql' with 5.7 package
@@ -776,6 +774,8 @@ fi
 %attr(755,root,root) %{_libdir}/%{name}/plugin/auth_test_plugin.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/authentication_ldap_sasl_client.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/connection_control.so
+%attr(755,root,root) %{_libdir}/%{name}/plugin/data_masking.so
+%{_libdir}/%{name}/plugin/data_masking.ini
 %attr(755,root,root) %{_libdir}/%{name}/plugin/dialog.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/group_replication.so
 %attr(755,root,root) %{_libdir}/%{name}/plugin/keyring_file.so
