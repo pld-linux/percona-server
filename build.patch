@@ -48,3 +48,38 @@
  #include <iterator>
  #include <list>
  #include <map>
+
+--- percona-server-5.7.44-48/storage/tokudb/PerconaFT/cmake_modules/TokuBuildTagDatabases.cmake~	2025-03-15 18:05:03.000000000 +0100
++++ percona-server-5.7.44-48/storage/tokudb/PerconaFT/cmake_modules/TokuBuildTagDatabases.cmake	2025-03-15 18:06:40.528033591 +0100
+@@ -37,10 +37,14 @@ option(USE_ETAGS "Build the etags databa
+ if (USE_ETAGS)
+   find_program(ETAGS "etags")
+   if (NOT ETAGS MATCHES NOTFOUND)
++      file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/etags.files" "")
++      foreach(file ${all_srcs} ${all_hdrs})
++          file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/etags.files" "${file}\n")
++      endforeach(file)
+     add_custom_command(
+       OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/TAGS"
+       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/etags-stamp"
+-      COMMAND ${ETAGS} -o TAGS ${all_srcs} ${all_hdrs}
++      COMMAND ${ETAGS} -o TAGS -L "${CMAKE_CURRENT_BINARY_DIR}/etags.files"
+       COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/etags-stamp"
+       DEPENDS ${all_srcs} ${all_hdrs} install_tdb_h generate_config_h generate_log_code
+       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+@@ -54,10 +58,14 @@ if (USE_CTAGS AND
+     (NOT APPLE OR NOT USE_ETAGS))
+   find_program(CTAGS "ctags")
+   if (NOT CTAGS MATCHES NOTFOUND)
++      file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/ctags.files" "")
++      foreach(file ${all_srcs} ${all_hdrs})
++          file(APPEND "${CMAKE_CURRENT_BINARY_DIR}/ctags.files" "${file}\n")
++      endforeach(file)
+     add_custom_command(
+       OUTPUT "${CMAKE_CURRENT_SOURCE_DIR}/tags"
+       OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/ctags-stamp"
+-      COMMAND ${CTAGS} -o tags ${all_srcs} ${all_hdrs}
++      COMMAND ${CTAGS} -o tags -L "${CMAKE_CURRENT_BINARY_DIR}/ctags.files"
+       COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/ctags-stamp"
+       DEPENDS ${all_srcs} ${all_hdrs} install_tdb_h generate_config_h generate_log_code
+       WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")

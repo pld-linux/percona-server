@@ -41,7 +41,8 @@
 %undefine	with_coredumper
 %endif
 
-%define		rel	2
+%define		rel	1
+%define		percona_git_rel	51
 %define		percona_rel	48
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -53,7 +54,7 @@ Summary(uk.UTF-8):	Percona Server - швидкий SQL-сервер
 Summary(zh_CN.UTF-8):	Percona Server数据库服务器
 Name:		percona-server
 Version:	5.7.44
-Release:	%{percona_rel}.%{rel}
+Release:	%{percona_git_rel}.%{rel}
 License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://downloads.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
@@ -77,6 +78,8 @@ Source11:	%{name}-ndb-cpc.init
 Source12:	%{name}-ndb-cpc.sysconfig
 Source13:	%{name}-client.conf
 Source14:	my.cnf
+Patch100:	percona-server-git.patch
+# Patch100-md5:	bd4d4d8f219788e9b186bd4f343b70d9
 Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
 Patch2:		mysql-protobuf.patch
@@ -93,6 +96,7 @@ BuildRequires:	bison >= 1.875
 BuildRequires:	cmake >= 2.8.2
 BuildRequires:	curl-devel
 BuildRequires:	readline-devel >= 6.2
+BuildRequires:	libevent-devel
 BuildRequires:	libstdc++-devel >= 5:4.0
 BuildRequires:	automake
 %{?with_system_boost:BuildRequires:	boost-devel = 1.59.0}
@@ -475,21 +479,22 @@ Ten pakiet zawiera standardowego demona Percona Server NDB CPC.
 
 %prep
 %setup -q -n %{name}-%{version}-%{percona_rel} %{?with_sphinx:-a100} %{!?with_system_boost:-a101}
-%patch0 -p1
+%patch -P100 -p1
+%patch -P0 -p1
 %if %{with sphinx}
 # http://www.sphinxsearch.com/docs/manual-0.9.9.html#sphinxse-mysql51
 %{__mv} sphinx-*/mysqlse storage/sphinx
-%patch4 -p1
+%patch -P4 -p1
 cd storage/sphinx
-%patch5 -p2
+%patch -P5 -p2
 cd ../..
 %endif
-%patch1 -p1
-%patch2 -p1
-%patch3 -p1
-%patch6 -p1
-%patch7 -p1
-%patch8 -p1
+%patch -P1 -p1
+%patch -P2 -p1
+%patch -P3 -p1
+%patch -P6 -p1
+%patch -P7 -p1
+%patch -P8 -p1
 
 # to get these files rebuild
 [ -f sql/sql_yacc.cc ] && %{__rm} sql/sql_yacc.cc
