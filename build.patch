@@ -83,3 +83,13 @@
        COMMAND touch "${CMAKE_CURRENT_BINARY_DIR}/ctags-stamp"
        DEPENDS ${all_srcs} ${all_hdrs} install_tdb_h generate_config_h generate_log_code
        WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}")
+--- percona-server-5.7.44-48/storage/tokudb/PerconaFT/portability/toku_assert.h~	2023-11-30 20:46:46.000000000 +0100
++++ percona-server-5.7.44-48/storage/tokudb/PerconaFT/portability/toku_assert.h	2025-05-15 15:43:01.238611434 +0200
+@@ -43,6 +43,7 @@ Copyright (c) 2006, 2015, Percona and/or
+ /* This version will complain if NDEBUG is set. */
+ /* It evaluates the argument and then calls a function  toku_do_assert() which takes all the hits for the branches not taken. */
+ 
++#undef NDEBUG
+ #include <portability/toku_config.h>
+ 
+ #include <stdint.h>
