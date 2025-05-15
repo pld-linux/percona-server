@@ -2,7 +2,8 @@
 set -e
 url=https://github.com/percona/percona-server.git
 package=percona-server
-tag=Percona-Server-5.7.44-48
+tagbase=Percona-Server-5.7.44-48
+tagnew=Percona-Server-5.7.44-52
 branch=5.7
 out=$package-git.patch
 repo=$package.git
@@ -18,8 +19,8 @@ if [ ! -d $repo ]; then
 fi
 
 cd $repo
-	git fetch origin +$branch:$branch +refs/tags/$tag:refs/tags/$tag
-	git log -p --date=default --reverse $tag..$branch | filter > ../$out.tmp
+	git fetch origin +$branch:$branch +refs/tags/$tagbase:refs/tags/$tagbase +refs/tags/$tagnew:refs/tags/$tagnew
+	git log -p --date=default --reverse $tagbase..$tagnew | filter > ../$out.tmp
 cd ..
 
 if cmp -s $out{,.tmp}; then

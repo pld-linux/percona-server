@@ -42,7 +42,7 @@
 %endif
 
 %define		rel	1
-%define		percona_git_rel	51
+%define		percona_git_rel	52
 %define		percona_rel	48
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
