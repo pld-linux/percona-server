@@ -3,7 +3,7 @@ set -e
 url=https://github.com/percona/percona-server.git
 package=percona-server
 tagbase=Percona-Server-5.7.44-48
-tagnew=Percona-Server-5.7.44-52
+tagnew=Percona-Server-5.7.44-53
 branch=5.7
 out=$package-git.patch
 repo=$package.git
