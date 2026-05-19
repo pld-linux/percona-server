@@ -118,3 +118,31 @@
    MY_CHECK_CXX_COMPILER_FLAG("-Wunused-but-set-parameter" HAVE_UNUSED_BUT_SET)
    IF(HAVE_UNUSED_BUT_SET)
      ADD_COMPILE_FLAGS(${mysqlxtest_SRC} COMPILE_FLAGS
+--- a/include/my_global.h
++++ b/include/my_global.h
+@@ -213,7 +213,7 @@ typedef SOCKET my_socket;
+ #define INVALID_SOCKET -1
+ #endif
+ C_MODE_START
+-typedef void	(*sig_return)();/* Returns type from signal */
++typedef void	(*sig_return)(int);/* Returns type from signal */
+ C_MODE_END
+ #if defined(__GNUC__)
+ typedef char	pchar;		/* Mixed prototypes can take char */
+--- a/storage/rocksdb/CMakeLists.txt
++++ b/storage/rocksdb/CMakeLists.txt
+@@ -100,2 +100,5 @@
+   ADD_COMPILE_OPTIONS(-fno-builtin-memcmp)
++  # bundled rocksdb headers use uint*_t without including <cstdint>; libstdc++
++  # no longer pulls it in transitively (gcc 13+). force-include for c++ only.
++  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -include cstdint")
+ ENDIF()
+--- a/client/mysql.cc
++++ b/client/mysql.cc
+@@ -57,3 +57,1 @@
+-#if defined(USE_LIBEDIT_INTERFACE)
+ #include <locale.h>
+-#endif
+
+
+
