@@ -41,8 +41,8 @@
 %undefine	with_coredumper
 %endif
 
-%define		rel	2
-%define		percona_git_rel	54
+%define		rel	1
+%define		percona_git_rel	57
 %define		percona_rel	48
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -79,7 +79,7 @@ Source12:	%{name}-ndb-cpc.sysconfig
 Source13:	%{name}-client.conf
 Source14:	my.cnf
 Patch100:	percona-server-git.patch
-# Patch100-md5:	4aecb3e8f78152ecb0acdf3bcfaf0444
+# Patch100-md5:	966e20111f5b53e8978630f52bfbfa97
 Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
 Patch2:		mysql-protobuf.patch
