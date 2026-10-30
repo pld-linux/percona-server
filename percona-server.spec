@@ -42,7 +42,7 @@
 %endif
 
 %define		rel	1
-%define		percona_git_rel	57
+%define		percona_git_rel	60
 %define		percona_rel	48
 Summary:	Percona Server: a very fast and reliable SQL database engine
 Summary(de.UTF-8):	Percona Server: ist eine SQL-Datenbank
@@ -59,10 +59,10 @@ License:	GPL + Percona Server FLOSS Exception
 Group:		Applications/Databases
 Source0:	https://downloads.percona.com/downloads/Percona-Server-5.7/LATEST/source/tarball/%{name}-%{version}-%{percona_rel}.tar.gz
 # Source0-md5:	f530424ced878ee9e9c430e13ce3fe33
-Source100:	http://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
+Source100:	https://www.sphinxsearch.com/files/sphinx-2.2.11-release.tar.gz
 # Source100-md5:	5cac34f3d78a9d612ca4301abfcbd666
 %if %{without system_boost}
-Source101:      http://downloads.sourceforge.net/boost/boost_1_59_0.tar.bz2
+Source101:      https://downloads.sourceforge.net/boost/boost_1_59_0.tar.bz2
 # Source101-md5:	6aa9a5c6a4ca1016edd0ed1178e3cb87
 %endif
 Source1:	%{name}.init
@@ -79,7 +79,7 @@ Source12:	%{name}-ndb-cpc.sysconfig
 Source13:	%{name}-client.conf
 Source14:	my.cnf
 Patch100:	percona-server-git.patch
-# Patch100-md5:	966e20111f5b53e8978630f52bfbfa97
+# Patch100-md5:	af630a0c36e1fb2e5171585a814980f2
 Patch0:		mysql-opt.patch
 Patch1:		mysql-versioning.patch
 Patch2:		mysql-protobuf.patch
